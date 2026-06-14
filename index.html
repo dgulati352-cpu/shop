@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>QuickShop — Your Local Store, Delivered Fast</title>
+  <meta name="description" content="Order groceries and essentials from your local shop. Fast delivery, great prices.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- ========== AUTH SCREEN ========== -->
+  <div id="auth-screen" class="screen" style="display:flex;">
+    <div class="auth-wrapper">
+      <div class="auth-left">
+        <div class="auth-brand">
+          <div class="brand-icon"><i class="fas fa-bolt"></i></div>
+          <h1>Quick<span>Shop</span></h1>
+          <p class="brand-tagline">Your neighbourhood store, now online</p>
+        </div>
+        <div class="auth-features">
+          <div class="auth-feature"><i class="fas fa-truck-fast"></i><span>Lightning Fast Delivery</span></div>
+          <div class="auth-feature"><i class="fas fa-tags"></i><span>Best Local Prices</span></div>
+          <div class="auth-feature"><i class="fas fa-shield-halved"></i><span>Secure Payments</span></div>
+        </div>
+      </div>
+      <div class="auth-right">
+        <!-- Login Form -->
+        <div id="login-form" class="auth-card">
+          <h2>Welcome to QuickShop</h2>
+          <p class="auth-subtitle">Sign in to start shopping your essentials</p>
+          <button class="btn-google" onclick="handleGoogleLogin()">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-9 20-20 0-1.3-.1-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 19 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.5 35.5 26.9 36 24 36c-5.2 0-9.7-2.9-11.3-7l-6.5 5.1C9.7 39.7 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-1 2.7-3 5-5.6 6.5l6.2 5.2C39.8 36.3 44 30.7 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+            Continue with Google
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MAIN STOREFRONT ========== -->
+  <div id="store-screen" class="screen" style="display:none;">
+    <!-- Top Nav -->
+    <nav id="main-nav">
+      <div class="nav-inner">
+        <div class="nav-left">
+          <div class="nav-brand" onclick="goHome()"><i class="fas fa-bolt"></i> Quick<span>Shop</span></div>
+          <div class="delivery-badge"><i class="fas fa-clock"></i> <span id="delivery-time">10 min</span></div>
+        </div>
+        <div class="nav-search">
+          <i class="fas fa-search"></i>
+          <input type="text" id="search-input" placeholder="Search for products..." oninput="handleSearch(this.value)">
+          <div id="search-dropdown" class="search-dropdown hidden"></div>
+        </div>
+        <div class="nav-right">
+          <button id="cart-toggle" class="nav-icon-btn" onclick="toggleCart()">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cart-badge" class="badge hidden">0</span>
+          </button>
+          <button class="nav-icon-btn" onclick="showOrders()"><i class="fas fa-box"></i></button>
+          <div class="user-menu" onclick="toggleUserMenu()">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <div id="user-dropdown" class="user-dropdown hidden">
+              <div class="user-info">
+                <strong id="dropdown-name">User</strong>
+                <small id="dropdown-email">user@email.com</small>
+              </div>
+              <div class="dropdown-divider"></div>
+              <button onclick="showOrders()"><i class="fas fa-box"></i> My Orders</button>
+              <button onclick="showAddresses()"><i class="fas fa-map-marker-alt"></i> Addresses</button>
+              <button onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Mobile Search -->
+      <div class="mobile-search">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search for products..." oninput="handleSearch(this.value)">
+      </div>
+    </nav>
+
+    <!-- Category Strip -->
+    <div id="category-strip">
+      <div class="category-strip-inner" id="category-pills"></div>
+    </div>
+
+    <!-- Hero Banner -->
+    <div id="hero-banner">
+      <div class="hero-slides" id="hero-slides"></div>
+      <div class="hero-dots" id="hero-dots"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Categories Grid -->
+      <section id="categories-section">
+        <h2 class="section-title">Shop by Category</h2>
+        <div class="categories-grid" id="categories-grid"></div>
+      </section>
+
+      <!-- Product Sections (dynamically filled) -->
+      <div id="product-sections"></div>
+
+      <!-- Articles Section (dynamically filled by category) -->
+      <div id="articles-section"></div>
+
+      <!-- Search Results -->
+      <section id="search-results" class="hidden">
+        <h2 class="section-title">Search Results for "<span id="search-query-text"></span>"</h2>
+        <div class="products-grid" id="search-results-grid"></div>
+        <div id="no-results" class="no-results hidden">
+          <i class="fas fa-search"></i>
+          <p>No products found</p>
+        </div>
+      </section>
+
+      <!-- Category View -->
+      <section id="category-view" class="hidden">
+        <div class="category-header">
+          <button class="back-btn" onclick="goHome()"><i class="fas fa-arrow-left"></i></button>
+          <h2 id="category-view-title">Category</h2>
+        </div>
+        <div class="products-grid" id="category-products-grid"></div>
+      </section>
+    </main>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-overlay" class="overlay hidden" onclick="toggleCart()"></div>
+    <aside id="cart-sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <h3><i class="fas fa-shopping-cart"></i> My Cart</h3>
+        <button class="close-btn" onclick="toggleCart()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="cart-items" class="sidebar-body"></div>
+      <div id="cart-footer" class="sidebar-footer hidden">
+        <div class="cart-summary">
+          <div class="summary-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
+          <div class="summary-row"><span>Delivery Fee</span><span id="cart-delivery">₹25</span></div>
+          <div class="summary-row discount hidden" id="discount-row"><span>Discount</span><span id="cart-discount">-₹0</span></div>
+          <div class="summary-row total"><span>Total</span><span id="cart-total">₹0</span></div>
+        </div>
+        <div class="coupon-section">
+          <input type="text" id="coupon-input" placeholder="Enter coupon code">
+          <button onclick="applyCoupon()">Apply</button>
+        </div>
+        <button class="btn-checkout" onclick="showCheckout()"><i class="fas fa-lock"></i> Proceed to Checkout</button>
+      </div>
+      <div id="cart-empty" class="empty-state">
+        <i class="fas fa-cart-plus"></i>
+        <p>Your cart is empty</p>
+        <small>Add items to get started</small>
+      </div>
+    </aside>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal hidden">
+      <div class="modal-content checkout-content">
+        <div class="modal-header">
+          <h3><i class="fas fa-credit-card"></i> Checkout</h3>
+          <button class="close-btn" onclick="closeCheckout()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="checkout-body">
+          <div class="checkout-section">
+            <h4><i class="fas fa-user-circle"></i> Contact & Delivery Details</h4>
+            <div id="checkout-address" class="checkout-address-box hidden"></div>
+            <div class="input-group">
+              <i class="fas fa-user"></i>
+              <input type="text" id="checkout-name-input" placeholder="Full Name">
+            </div>
+            <div class="input-group">
+              <i class="fas fa-phone"></i>
+              <input type="tel" id="checkout-phone-input" placeholder="Phone Number">
+            </div>
+            <div class="input-group">
+              <i class="fas fa-envelope"></i>
+              <input type="email" id="checkout-email-input" placeholder="Email Address">
+            </div>
+            <div class="input-group">
+              <i class="fas fa-map-marker-alt"></i>
+              <input type="text" id="checkout-address-input" placeholder="Enter delivery address (Location)">
+            </div>
+          </div>
+          <div class="checkout-section">
+            <h4><i class="fas fa-box"></i> Order Summary</h4>
+            <div id="checkout-items"></div>
+            <div class="checkout-totals">
+              <div class="summary-row"><span>Subtotal</span><span id="checkout-subtotal">₹0</span></div>
+              <div class="summary-row"><span>Delivery</span><span id="checkout-delivery">₹25</span></div>
+              <div class="summary-row discount hidden" id="checkout-discount-row"><span>Discount</span><span id="checkout-discount">-₹0</span></div>
+              <div class="summary-row total"><span>Total</span><span id="checkout-total">₹0</span></div>
+            </div>
+          </div>
+          <div class="checkout-section">
+            <h4><i class="fas fa-wallet"></i> Payment Method</h4>
+            <div class="payment-options">
+              <label class="payment-option selected">
+                <input type="radio" name="payment" value="cod" checked>
+                <i class="fas fa-money-bill-wave"></i>
+                <div><strong>Cash on Delivery</strong><small>Pay when you receive</small></div>
+              </label>
+              <label class="payment-option">
+                <input type="radio" name="payment" value="upi">
+                <i class="fas fa-mobile-alt"></i>
+                <div><strong>UPI Payment</strong><small>GPay, PhonePe, Paytm</small></div>
+              </label>
+              <label class="payment-option">
+                <input type="radio" name="payment" value="card">
+                <i class="fas fa-credit-card"></i>
+                <div><strong>Card Payment</strong><small>Credit / Debit card</small></div>
+              </label>
+            </div>
+            <!-- UPI Section -->
+            <div id="upi-section" class="payment-detail hidden">
+              <div class="input-group"><i class="fas fa-at"></i><input type="text" id="upi-id" placeholder="Enter UPI ID (e.g. name@upi)"></div>
+            </div>
+            <!-- Card Section -->
+            <div id="card-section" class="payment-detail hidden">
+              <div class="input-group"><i class="fas fa-credit-card"></i><input type="text" id="card-number" placeholder="Card Number" maxlength="19"></div>
+              <div class="card-row">
+                <div class="input-group"><i class="fas fa-calendar"></i><input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5"></div>
+                <div class="input-group"><i class="fas fa-lock"></i><input type="text" id="card-cvv" placeholder="CVV" maxlength="3"></div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-place-order" onclick="placeOrder()"><i class="fas fa-check-circle"></i> Place Order</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders Modal -->
+    <div id="orders-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3><i class="fas fa-box"></i> My Orders</h3>
+          <button class="close-btn" onclick="closeOrders()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="orders-list" class="modal-body"></div>
+      </div>
+    </div>
+
+    <!-- Order Success -->
+    <div id="order-success" class="modal hidden">
+      <div class="modal-content success-content">
+        <div class="success-animation">
+          <div class="success-checkmark"><i class="fas fa-check"></i></div>
+        </div>
+        <h2>Order Placed!</h2>
+        <p>Your order has been placed successfully</p>
+        <div class="success-details">
+          <p>Order ID: <strong id="success-order-id">#QS0001</strong></p>
+          <p>Estimated Delivery: <strong>10-15 minutes</strong></p>
+        </div>
+        <button class="btn-primary" onclick="closeSuccess()">Continue Shopping</button>
+      </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div id="product-modal" class="modal hidden">
+      <div class="modal-content product-detail-content">
+        <button class="close-btn modal-close-float" onclick="closeProductModal()"><i class="fas fa-times"></i></button>
+        <div class="product-detail-grid">
+          <div class="product-detail-image" id="product-detail-image"></div>
+          <div class="product-detail-info">
+            <span class="product-detail-category" id="detail-category">Category</span>
+            <h2 id="detail-name">Product Name</h2>
+            <p class="product-detail-desc" id="detail-desc">Description</p>
+            <div class="product-detail-pricing">
+              <span class="detail-price" id="detail-price">₹0</span>
+              <span class="detail-mrp" id="detail-mrp">₹0</span>
+              <span class="detail-discount" id="detail-discount">0% OFF</span>
+            </div>
+            <div class="product-detail-unit" id="detail-unit">1 kg</div>
+            <div class="product-detail-actions">
+              <div id="detail-cart-controls"></div>
+            </div>
+          </div>
+        </div>
+        <div class="related-products">
+          <h3>Related Products</h3>
+          <div class="products-scroll" id="related-products-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="main-footer">
+      <div class="footer-inner">
+        <div class="footer-brand"><i class="fas fa-bolt"></i> Quick<span>Shop</span><p>Your local store, delivered fast.</p></div>
+        <div class="footer-links">
+          <h4>Quick Links</h4>
+          <a href="#" onclick="goHome();return false;">Home</a>
+          <a href="#" onclick="showOrders();return false;">My Orders</a>
+        </div>
+        <div class="footer-links">
+          <h4>Support</h4>
+          <a href="#">Help Center</a>
+          <a href="#">Contact Us</a>
+        </div>
+      </div>
+      <div class="footer-bottom"><p>&copy; 2026 QuickShop. All rights reserved.</p></div>
+    </footer>
+
+    <!-- Mobile Bottom Nav -->
+    <nav id="mobile-nav">
+      <button class="mob-nav-btn active" onclick="goHome(); setMobileActive(this)"><i class="fas fa-home"></i><span>Home</span></button>
+      <button class="mob-nav-btn" onclick="document.getElementById('search-input').focus(); setMobileActive(this)"><i class="fas fa-search"></i><span>Search</span></button>
+      <button class="mob-nav-btn" onclick="toggleCart(); setMobileActive(this)"><i class="fas fa-shopping-cart"></i><span>Cart</span><span id="mob-cart-badge" class="badge hidden">0</span></button>
+      <button class="mob-nav-btn" onclick="showOrders(); setMobileActive(this)"><i class="fas fa-box"></i><span>Orders</span></button>
+      <button class="mob-nav-btn" onclick="toggleUserMenu(); setMobileActive(this)"><i class="fas fa-user"></i><span>Account</span></button>
+    </nav>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="hidden">
+    <div class="loader"><div class="loader-spinner"></div><p>Loading...</p></div>
+  </div>
+
+  <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+  <!-- Firebase Auth -->
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+  <!-- Firebase Firestore (Database) -->
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+  
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+mutation CreateOrder($total: Float!, $items: [OrderItem_Data!]!) @auth(level: USER) {
+  order_insert(data: {
+    status: "pending",
+    totalAmount: $total,
+    createdAt_expr: "request.time",
+    userId_expr: "auth.uid",
+    orderItems_on_order: $items
+  })
+}
+
+mutation LogInventoryChange($productId: UUID!, $amount: Int!, $reason: String!) @auth(expr: "auth.token.admin == true") {
+  inventoryLog_insert(data: {
+    productId: $productId,
+    changeAmount: $amount,
+    reason: $reason,
+    createdAt_expr: "request.time"
+  })
+}
+
+query GetMyOrders @auth(level: USER) {
+  orders(where: { userId: { eq_expr: "auth.uid" } }) {
+    id
+    status
+    totalAmount
+    createdAt
+    orderItems_on_order {
+      quantity
+      priceAtPurchase
+      product {
+        name
+      }
+    }
+  }
+}
+
+query ListProducts @auth(level: PUBLIC) {
+  products(orderBy: [{ price: ASC }]) {
+    id
+    name
+    price
+    stockQuantity
+    description
+    imageUrl
+  }
+}

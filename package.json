@@ -1,0 +1,16 @@
+{
+  "name": "quickshop-blinkit-clone",
+  "version": "1.0.0",
+  "description": "Blinkit/Zepto clone for local shop owner and customers",
+  "main": "app.js",
+  "scripts": {
+    "start": "npx -y serve .",
+    "dev": "npx -y serve ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "firebase": "^12.14.0"
+  }
+}

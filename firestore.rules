@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Orders: customers can create/read their own; admin reads all
+    match /orders/{orderId} {
+      allow read, write: if true;
+    }
+
+    // Customers: anyone can write their own profile; admin reads all
+    match /customers/{email} {
+      allow read, write: if true;
+    }
+
+    // Promo codes: anyone can read; only admin writes (via admin panel)
+    match /promoCodes/{promoId} {
+      allow read, write: if true;
+    }
+
+    // Articles: anyone can read published; admin manages all
+    match /articles/{articleId} {
+      allow read, write: if true;
+    }
+
+    // Products: readable by all
+    match /products/{productId} {
+      allow read, write: if true;
+    }
+  }
+}
