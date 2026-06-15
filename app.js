@@ -945,6 +945,11 @@ function applyCoupon() {
 // ==================== CHECKOUT & ORDER PLACEMENT ====================
 
 function showCheckout() {
+  if (!isStandalone()) {
+    document.getElementById('pwa-block-modal').classList.remove('hidden');
+    return;
+  }
+
   toggleCart();
   const modal = document.getElementById('checkout-modal');
   modal.classList.remove('hidden');
@@ -1227,6 +1232,56 @@ function showAddresses() {
     }
   }
 }
+
+// ==================== PWA & INSTALLATION ====================
+
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show the download button
+  const installBtn = document.getElementById('install-app-btn');
+  if (installBtn) installBtn.classList.remove('hidden');
+});
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function promptAppInstall() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (isIOS && !isStandalone()) {
+    document.getElementById('pwa-block-modal').classList.add('hidden');
+    document.getElementById('ios-install-modal').classList.remove('hidden');
+    return;
+  }
+  
+  if (deferredPrompt) {
+    document.getElementById('pwa-block-modal').classList.add('hidden');
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        const installBtn = document.getElementById('install-app-btn');
+        if (installBtn) installBtn.classList.add('hidden');
+      }
+      deferredPrompt = null;
+    });
+  } else {
+    // If no prompt available but not standalone, show fallback alert
+    document.getElementById('pwa-block-modal').classList.add('hidden');
+    alert("Please use your browser's menu (e.g., 'Add to Home Screen') to install this app.");
+  }
+}
+
+// Show install button for iOS immediately since it doesn't fire beforeinstallprompt
+window.addEventListener('DOMContentLoaded', () => {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (isIOS && !isStandalone()) {
+    const installBtn = document.getElementById('install-app-btn');
+    if (installBtn) installBtn.classList.remove('hidden');
+  }
+});
 
 // Startup
 window.addEventListener('DOMContentLoaded', initApp);

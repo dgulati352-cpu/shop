@@ -9,6 +9,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="QuickShop">
+  <link rel="apple-touch-icon" href="assets/icon.svg">
 </head>
 <body>
 
@@ -59,6 +64,9 @@
           <div id="search-dropdown" class="search-dropdown hidden"></div>
         </div>
         <div class="nav-right">
+          <button id="install-app-btn" class="nav-icon-btn hidden" onclick="promptAppInstall()" style="background:var(--primary);color:white;border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;margin-right:8px;white-space:nowrap;">
+            <i class="fas fa-download"></i> Get App
+          </button>
           <button id="cart-toggle" class="nav-icon-btn" onclick="toggleCart()">
             <i class="fas fa-shopping-cart"></i>
             <span id="cart-badge" class="badge hidden">0</span>
@@ -261,6 +269,30 @@
       </div>
     </div>
 
+    <!-- PWA Install Block Modal -->
+    <div id="pwa-block-modal" class="modal hidden">
+      <div class="modal-content" style="text-align:center; padding: 40px 20px;">
+        <i class="fas fa-mobile-alt" style="font-size: 48px; color: var(--primary); margin-bottom: 20px;"></i>
+        <h2 style="margin-bottom: 12px; color: var(--text-primary);">App Download Required</h2>
+        <p style="color: var(--text-muted); margin-bottom: 24px; line-height: 1.5;">To place an order, please install the QuickShop app to your device's home screen. Enjoy a faster, seamless shopping experience!</p>
+        <button class="btn-primary" onclick="promptAppInstall()">Download / Install App</button>
+        <button class="btn-outline-sm" onclick="document.getElementById('pwa-block-modal').classList.add('hidden')" style="margin-top: 16px; width: 100%; border:none; background:transparent; color: var(--text-muted);">Cancel</button>
+      </div>
+    </div>
+
+    <!-- iOS Install Instruction Modal -->
+    <div id="ios-install-modal" class="modal hidden">
+      <div class="modal-content" style="text-align:center; padding: 40px 20px;">
+        <h2 style="margin-bottom: 16px;">Install QuickShop</h2>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Install this app on your device to order groceries quickly and easily.</p>
+        <div style="background: var(--bg-input); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 24px;">
+          <p style="margin: 0 0 12px 0;"><strong>1.</strong> Tap the <strong>Share</strong> icon <i class="fas fa-share-square" style="color: var(--primary);"></i> at the bottom of the screen.</p>
+          <p style="margin: 0;"><strong>2.</strong> Scroll down and tap <strong>Add to Home Screen</strong> <i class="fas fa-plus-square" style="color: var(--primary);"></i>.</p>
+        </div>
+        <button class="btn-primary" onclick="document.getElementById('ios-install-modal').classList.add('hidden')">Got it!</button>
+      </div>
+    </div>
+
     <!-- Product Detail Modal -->
     <div id="product-modal" class="modal hidden">
       <div class="modal-content product-detail-content">
@@ -328,6 +360,16 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
   <!-- Firebase Firestore (Database) -->
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+  
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+          console.warn('Service worker registration failed:', err);
+        });
+      });
+    }
+  </script>
   
   <script src="app.js"></script>
 </body>
