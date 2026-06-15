@@ -21,29 +21,22 @@ if (firebaseConfig.apiKey) {
 
 
 const INITIAL_PRODUCTS = [
-  // Fruits & Vegetables
-  { id: "p1", name: "Fresh Red Apples", category: "Fruits & Vegetables", price: 120, mrp: 150, unit: "4 pcs (~500g)", emoji: "🍎", stock: 50, desc: "Crisp, sweet, and juicy red apples sourced from local organic orchards." },
-  { id: "p2", name: "Fresh Bananas", category: "Fruits & Vegetables", price: 50, mrp: 60, unit: "1 dozen", emoji: "🍌", stock: 100, desc: "Rich in potassium, perfectly ripe yellow bananas." },
-  { id: "p3", name: "Organic Potatoes", category: "Fruits & Vegetables", price: 40, mrp: 45, unit: "1 kg", emoji: "🥔", stock: 120, desc: "Versatile starchy vegetable, perfect for roasting, baking, or mashing." },
-  { id: "p4", name: "Fresh Tomatoes", category: "Fruits & Vegetables", price: 30, mrp: 40, unit: "500 g", emoji: "🍅", stock: 80, desc: "Plump, vine-ripened red tomatoes ideal for salads and sauces." },
-
-  // Dairy & Bread
-  { id: "p5", name: "Fresh Whole Milk", category: "Dairy & Bread", price: 60, mrp: 65, unit: "1 L", emoji: "🥛", stock: 60, desc: "Pasteurized, homogenized whole milk packed with nutrients." },
-  { id: "p6", name: "Salted Butter", category: "Dairy & Bread", price: 55, mrp: 58, unit: "100 g", emoji: "🧈", stock: 45, desc: "Creamy, rich salted table butter perfect for toast and baking." },
-  { id: "p7", name: "Brown Bread", category: "Dairy & Bread", price: 45, mrp: 50, unit: "400 g", emoji: "🍞", stock: 35, desc: "High-fiber, nutritious whole wheat brown bread sliced fresh." },
-
-  // Snacks & Drinks
-  { id: "p8", name: "Potato Chips (Classic Salted)", category: "Snacks & Drinks", price: 20, mrp: 20, unit: "50 g", emoji: "🍟", stock: 150, desc: "Crispy golden potato chips sprinkled with sea salt." },
-  { id: "p9", name: "Chocolate Chip Cookies", category: "Snacks & Drinks", price: 80, mrp: 90, unit: "150 g", emoji: "🍪", stock: 75, desc: "Oven-baked crunchy cookies loaded with rich chocolate chips." },
-  { id: "p10", name: "Coca Cola", category: "Snacks & Drinks", price: 40, mrp: 40, unit: "750 ml", emoji: "🥤", stock: 90, desc: "Classic refreshing soft drink, best served chilled." },
-
-  // Staples & Grains
-  { id: "p11", name: "Premium Basmati Rice", category: "Staples & Grains", price: 140, mrp: 180, unit: "1 kg", emoji: "🌾", stock: 110, desc: "Extra long, aromatic basmati rice grains aged to perfection." },
-  { id: "p12", name: "Whole Wheat Atta", category: "Staples & Grains", price: 260, mrp: 290, unit: "5 kg", emoji: "🥣", stock: 40, desc: "100% stone-ground whole wheat flour for soft rotis." },
-
-  // Personal Care
-  { id: "p13", name: "Neem Soap", category: "Personal Care", price: 35, mrp: 40, unit: "125 g", emoji: "🧼", stock: 85, desc: "Antibacterial herbal soap enriched with neem and aloe extracts." },
-  { id: "p14", name: "Herbal Shampoo", category: "Personal Care", price: 190, mrp: 220, unit: "340 ml", emoji: "🧴", stock: 50, desc: "Nourishing formula with natural extracts to strengthen hair." }
+  // Sauces
+  { id: "p1", name: "Tomato Ketchup", category: "Sauces", price: 120, mrp: 150, unit: "500g", emoji: "<img src='assets/sauces.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 50, desc: "Rich and thick tomato ketchup." },
+  // Frozen
+  { id: "p2", name: "Frozen Peas", category: "Frozen", price: 80, mrp: 100, unit: "1 kg", emoji: "<img src='assets/frozen.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 100, desc: "Freshly frozen green peas." },
+  // Seasoning
+  { id: "p3", name: "Mixed Herbs", category: "Seasoning", price: 60, mrp: 75, unit: "50g", emoji: "<img src='assets/seasoning.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 120, desc: "Aromatic mixed herbs for pizza and pasta." },
+  // Cakes Material
+  { id: "p4", name: "Baking Powder", category: "Cakes Material", price: 40, mrp: 50, unit: "100g", emoji: "<img src='assets/cakes_material.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 80, desc: "High quality baking powder for fluffy cakes." },
+  // Cake Mould
+  { id: "p5", name: "Silicone Cake Mould", category: "Cake Mould", price: 250, mrp: 300, unit: "1 pc", emoji: "<img src='assets/cake_mould.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 30, desc: "Non-stick silicone mould for baking." },
+  // Cake Premix
+  { id: "p6", name: "Chocolate Cake Premix", category: "Cake Premix", price: 150, mrp: 180, unit: "400g", emoji: "<img src='assets/cake_premix.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 60, desc: "Easy to bake chocolate cake premix." },
+  // Coffees
+  { id: "p7", name: "Instant Coffee", category: "Coffees", price: 200, mrp: 250, unit: "100g", emoji: "<img src='https://images.unsplash.com/photo-1559525839-b184a4d698c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 90, desc: "Strong and aromatic instant coffee." },
+  // Mojitos
+  { id: "p8", name: "Virgin Mojito Syrup", category: "Mojitos", price: 180, mrp: 220, unit: "750ml", emoji: "<img src='https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 45, desc: "Refreshing mint and lime mojito syrup." }
 ];
 
 const DEFAULT_STORE_SETTINGS = {
@@ -70,6 +63,12 @@ let state = {
 
 // Initialize app data on startup
 async function initApp() {
+  if (!localStorage.getItem('qs_force_updated_categories_v2')) {
+    localStorage.removeItem('qs_products');
+    localStorage.removeItem('qs_categories');
+    localStorage.setItem('qs_force_updated_categories_v2', 'true');
+  }
+
   // Load products & categories from Firebase first, fallback to local
   try {
     const prodsSnap = await db.collection('products').get();
@@ -440,9 +439,14 @@ function getCategoriesList() {
   }
   const catNames = [...new Set(state.products.map(p => p.category))];
   const emojis = {
-    "Fruits & Vegetables": "🥦", "Dairy & Bread": "🍞", "Snacks & Drinks": "🥤",
-    "Staples & Grains": "🌾", "Personal Care": "🧼", "Household": "🧹",
-    "Frozen & Ice Cream": "🍦", "Baby & Kids": "🍼"
+    "Sauces": "<img src='assets/sauces.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
+    "Frozen": "<img src='assets/frozen.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
+    "Seasoning": "<img src='assets/seasoning.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
+    "Cakes Material": "<img src='assets/cakes_material.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
+    "Cake Mould": "<img src='assets/cake_mould.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
+    "Cake Premix": "<img src='assets/cake_premix.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
+    "Coffees": "<img src='https://images.unsplash.com/photo-1559525839-b184a4d698c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
+    "Mojitos": "<img src='https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>"
   };
   return catNames.map(name => ({ name, emoji: emojis[name] || '🛒' }));
 }
@@ -724,7 +728,7 @@ function openProductModal(prodId) {
   }
 
   document.getElementById('detail-unit').innerText = p.unit || '1 unit';
-  document.getElementById('product-detail-image').innerText = p.emoji || '🛒';
+  document.getElementById('product-detail-image').innerHTML = p.emoji || '🛒';
 
   // Detail Cart Actions
   updateDetailModalCartActions(p);
@@ -1166,7 +1170,7 @@ function renderUserOrdersList(list) {
         <span class="order-status status-${o.status.toLowerCase()}">${o.status}</span>
       </div>
       <div class="order-items">
-        ${o.items.map(item => `${item.emoji || '📦'} ${item.name} x ${item.quantity}`).join('<br>')}
+        ${o.items.map(item => `<div style="width:24px;height:24px;display:inline-block;vertical-align:middle;margin-right:8px;">${item.emoji || '📦'}</div><span style="vertical-align:middle;">${item.name} x ${item.quantity}</span>`).join('<br>')}
       </div>
       <div class="order-footer">
         <span class="order-date">${o.date}</span>
