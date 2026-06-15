@@ -22,21 +22,21 @@ if (firebaseConfig.apiKey) {
 
 const INITIAL_PRODUCTS = [
   // Sauces
-  { id: "p1", name: "Tomato Ketchup", category: "Sauces", price: 120, mrp: 150, unit: "500g", emoji: "<img src='assets/sauces.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 50, desc: "Rich and thick tomato ketchup." },
+  { id: "p1", name: "Tomato Ketchup", category: "Sauces", price: 120, mrp: 150, unit: "500g", imageUrl: "assets/sauces.png", stock: 50, desc: "Rich and thick tomato ketchup." },
   // Frozen
-  { id: "p2", name: "Frozen Peas", category: "Frozen", price: 80, mrp: 100, unit: "1 kg", emoji: "<img src='assets/frozen.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 100, desc: "Freshly frozen green peas." },
+  { id: "p2", name: "Frozen Peas", category: "Frozen", price: 80, mrp: 100, unit: "1 kg", imageUrl: "assets/frozen.png", stock: 100, desc: "Freshly frozen green peas." },
   // Seasoning
-  { id: "p3", name: "Mixed Herbs", category: "Seasoning", price: 60, mrp: 75, unit: "50g", emoji: "<img src='assets/seasoning.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 120, desc: "Aromatic mixed herbs for pizza and pasta." },
+  { id: "p3", name: "Mixed Herbs", category: "Seasoning", price: 60, mrp: 75, unit: "50g", imageUrl: "assets/seasoning.png", stock: 120, desc: "Aromatic mixed herbs for pizza and pasta." },
   // Cakes Material
-  { id: "p4", name: "Baking Powder", category: "Cakes Material", price: 40, mrp: 50, unit: "100g", emoji: "<img src='assets/cakes_material.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 80, desc: "High quality baking powder for fluffy cakes." },
+  { id: "p4", name: "Baking Powder", category: "Cakes Material", price: 40, mrp: 50, unit: "100g", imageUrl: "assets/cakes_material.png", stock: 80, desc: "High quality baking powder for fluffy cakes." },
   // Cake Mould
-  { id: "p5", name: "Silicone Cake Mould", category: "Cake Mould", price: 250, mrp: 300, unit: "1 pc", emoji: "<img src='assets/cake_mould.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 30, desc: "Non-stick silicone mould for baking." },
+  { id: "p5", name: "Silicone Cake Mould", category: "Cake Mould", price: 250, mrp: 300, unit: "1 pc", imageUrl: "assets/cake_mould.png", stock: 30, desc: "Non-stick silicone mould for baking." },
   // Cake Premix
-  { id: "p6", name: "Chocolate Cake Premix", category: "Cake Premix", price: 150, mrp: 180, unit: "400g", emoji: "<img src='assets/cake_premix.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 60, desc: "Easy to bake chocolate cake premix." },
+  { id: "p6", name: "Chocolate Cake Premix", category: "Cake Premix", price: 150, mrp: 180, unit: "400g", imageUrl: "assets/cake_premix.png", stock: 60, desc: "Easy to bake chocolate cake premix." },
   // Coffees
-  { id: "p7", name: "Instant Coffee", category: "Coffees", price: 200, mrp: 250, unit: "100g", emoji: "<img src='https://images.unsplash.com/photo-1559525839-b184a4d698c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 90, desc: "Strong and aromatic instant coffee." },
+  { id: "p7", name: "Instant Coffee", category: "Coffees", price: 200, mrp: 250, unit: "100g", imageUrl: "https://images.unsplash.com/photo-1559525839-b184a4d698c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", stock: 90, desc: "Strong and aromatic instant coffee." },
   // Mojitos
-  { id: "p8", name: "Virgin Mojito Syrup", category: "Mojitos", price: 180, mrp: 220, unit: "750ml", emoji: "<img src='https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>", stock: 45, desc: "Refreshing mint and lime mojito syrup." }
+  { id: "p8", name: "Virgin Mojito Syrup", category: "Mojitos", price: 180, mrp: 220, unit: "750ml", imageUrl: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", stock: 45, desc: "Refreshing mint and lime mojito syrup." }
 ];
 
 const DEFAULT_STORE_SETTINGS = {
@@ -63,10 +63,10 @@ let state = {
 
 // Initialize app data on startup
 async function initApp() {
-  if (!localStorage.getItem('qs_force_updated_categories_v2')) {
+  if (!localStorage.getItem('qs_force_updated_categories_v3')) {
     localStorage.removeItem('qs_products');
     localStorage.removeItem('qs_categories');
-    localStorage.setItem('qs_force_updated_categories_v2', 'true');
+    localStorage.setItem('qs_force_updated_categories_v3', 'true');
   }
 
   // Load products & categories from Firebase first, fallback to local
@@ -433,22 +433,24 @@ function openArticleView(id) {
   document.body.appendChild(overlay);
 }
 
+// Category image mapping
+const CATEGORY_IMAGES = {
+  "Sauces": "assets/sauces.png",
+  "Frozen": "assets/frozen.png",
+  "Seasoning": "assets/seasoning.png",
+  "Cakes Material": "assets/cakes_material.png",
+  "Cake Mould": "assets/cake_mould.png",
+  "Cake Premix": "assets/cake_premix.png",
+  "Coffees": "https://images.unsplash.com/photo-1559525839-b184a4d698c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  "Mojitos": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+};
+
 function getCategoriesList() {
   if (state.categories && state.categories.length > 0) {
-    return state.categories.map(c => ({ name: c.name, emoji: c.emoji || '🛒' }));
+    return state.categories.map(c => ({ name: c.name, imageUrl: c.imageUrl || CATEGORY_IMAGES[c.name] || '' }));
   }
   const catNames = [...new Set(state.products.map(p => p.category))];
-  const emojis = {
-    "Sauces": "<img src='assets/sauces.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
-    "Frozen": "<img src='assets/frozen.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
-    "Seasoning": "<img src='assets/seasoning.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
-    "Cakes Material": "<img src='assets/cakes_material.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
-    "Cake Mould": "<img src='assets/cake_mould.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
-    "Cake Premix": "<img src='assets/cake_premix.png' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
-    "Coffees": "<img src='https://images.unsplash.com/photo-1559525839-b184a4d698c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>",
-    "Mojitos": "<img src='https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' style='width:100%;height:100%;object-fit:cover;border-radius:inherit;'>"
-  };
-  return catNames.map(name => ({ name, emoji: emojis[name] || '🛒' }));
+  return catNames.map(name => ({ name, imageUrl: CATEGORY_IMAGES[name] || '' }));
 }
 
 function renderCategoryPills() {
@@ -511,7 +513,7 @@ function renderCategoriesGrid() {
 
   container.innerHTML = categories.map(cat => `
     <div class="category-card" onclick="showCategory('${cat.name}')">
-      <div class="category-emoji">${cat.emoji}</div>
+      <div class="category-emoji">${cat.imageUrl ? `<img src="${cat.imageUrl}" alt="${cat.name}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">` : '🛒'}</div>
       <div class="category-name">${cat.name}</div>
     </div>
   `).join('');
@@ -571,7 +573,7 @@ function renderProductCard(p) {
     <div class="product-card">
       ${discountTag}
       <div class="product-image-container" onclick="openProductModal('${p.id}')">
-        ${p.emoji || '🛒'}
+        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">` : (p.emoji || '🛒')}
       </div>
       <div class="product-info">
         <div class="product-title" onclick="openProductModal('${p.id}')">${p.name}</div>
@@ -670,7 +672,7 @@ function handleSearch(query) {
   } else {
     dropdown.innerHTML = filtered.slice(0, 5).map(p => `
       <div class="search-item" onclick="openProductModal('${p.id}')">
-        <span class="search-item-emoji">${p.emoji || '🛒'}</span>
+        <span class="search-item-emoji">${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : (p.emoji || '🛒')}</span>
         <div class="search-item-info">
           <span class="search-item-name">${p.name}</span>
           <span class="search-item-price">₹${p.price}</span>
@@ -728,7 +730,7 @@ function openProductModal(prodId) {
   }
 
   document.getElementById('detail-unit').innerText = p.unit || '1 unit';
-  document.getElementById('product-detail-image').innerHTML = p.emoji || '🛒';
+  document.getElementById('product-detail-image').innerHTML = p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">` : (p.emoji || '🛒');
 
   // Detail Cart Actions
   updateDetailModalCartActions(p);
@@ -876,7 +878,7 @@ function renderCartItems() {
 
   itemsContainer.innerHTML = state.cart.map(item => `
     <div class="cart-item">
-      <span class="cart-item-emoji">${item.product.emoji || '🛒'}</span>
+      <span class="cart-item-emoji">${item.product.imageUrl ? `<img src="${item.product.imageUrl}" alt="${item.product.name}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">` : (item.product.emoji || '🛒')}</span>
       <div class="cart-item-details">
         <div class="cart-item-name">${item.product.name}</div>
         <div class="cart-item-unit">${item.product.unit || '1 unit'}</div>
@@ -1010,7 +1012,7 @@ function closeCheckout() {
   document.getElementById('checkout-modal').classList.add('hidden');
 }
 
-function placeOrder() {
+async function placeOrder() {
   const finalName = document.getElementById('checkout-name-input').value.trim();
   const finalPhone = document.getElementById('checkout-phone-input').value.trim();
   const finalEmail = document.getElementById('checkout-email-input').value.trim();
@@ -1046,8 +1048,27 @@ function placeOrder() {
     }
   }
 
-  // Generate order
-  const orderId = 'QS' + Math.floor(1000 + Math.random() * 9000);
+  // Generate sequential order ID using Firestore counter
+  let orderNumber = Date.now(); // fallback
+  if (db) {
+    try {
+      const counterRef = db.collection('counters').doc('orders');
+      const counterSnap = await counterRef.get();
+      if (counterSnap.exists) {
+        orderNumber = (counterSnap.data().lastOrderNumber || 0) + 1;
+      } else {
+        orderNumber = 1;
+      }
+      await counterRef.set({ lastOrderNumber: orderNumber });
+    } catch(e) {
+      console.warn('Counter fetch failed, using fallback:', e);
+      orderNumber = state.orders.length + 1;
+    }
+  } else {
+    orderNumber = state.orders.length + 1;
+  }
+
+  const orderId = String(orderNumber);
   const subtotal = state.cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   let delivery = Number(state.storeSettings.deliveryFee);
   if (subtotal >= Number(state.storeSettings.freeDeliveryAbove)) delivery = 0;
@@ -1069,6 +1090,7 @@ function placeOrder() {
       name: item.product.name,
       price: item.product.price,
       quantity: item.quantity,
+      imageUrl: item.product.imageUrl || null,
       emoji: item.product.emoji
     })),
     subtotal,

@@ -26,5 +26,20 @@ service cloud.firestore {
     match /products/{productId} {
       allow read, write: if true;
     }
+
+    // Categories
+    match /categories/{catId} {
+      allow read, write: if true;
+    }
+
+    // Article categories
+    match /article_categories/{catId} {
+      allow read, write: if true;
+    }
+
+    // Counters for sequential order IDs
+    match /counters/{counterId} {
+      allow read, write: if true;
+    }
   }
 }
