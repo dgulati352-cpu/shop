@@ -848,16 +848,18 @@ function updateCartState(prodId) {
 function updateCartBadge() {
   const count = state.cart.reduce((sum, item) => sum + item.quantity, 0);
   const badge = document.getElementById('cart-badge');
-  const mobBadge = document.getElementById('mob-cart-badge');
+  const mobileBadge = document.getElementById('mobile-cart-badge');
 
   if (count > 0) {
     badge.innerText = count;
     badge.classList.remove('hidden');
-    mobBadge.innerText = count;
-    mobBadge.classList.remove('hidden');
+    if (mobileBadge) {
+      mobileBadge.innerText = count;
+      mobileBadge.classList.remove('hidden');
+    }
   } else {
     badge.classList.add('hidden');
-    mobBadge.classList.add('hidden');
+    if (mobileBadge) mobileBadge.classList.add('hidden');
   }
 }
 

@@ -90,7 +90,7 @@
       <!-- Mobile Search -->
       <div class="mobile-search">
         <i class="fas fa-search"></i>
-        <input type="text" placeholder="Search for products..." oninput="handleSearch(this.value)">
+        <input type="text" id="mobile-search-input" placeholder="Search for products..." oninput="handleSearch(this.value)">
       </div>
     </nav>
 
@@ -138,6 +138,31 @@
         <div class="products-grid" id="category-products-grid"></div>
       </section>
     </main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav id="mobile-nav" class="mobile-nav-bar">
+      <button class="mob-nav-btn active" onclick="goHome()">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </button>
+      <button class="mob-nav-btn" onclick="document.getElementById('mobile-search-input').focus()">
+        <i class="fas fa-search"></i>
+        <span>Search</span>
+      </button>
+      <button class="mob-nav-btn" onclick="toggleCart()">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Cart</span>
+        <span id="mobile-cart-badge" class="badge hidden" style="position:absolute; top:2px; right:15px;">0</span>
+      </button>
+      <button class="mob-nav-btn" onclick="showOrders()">
+        <i class="fas fa-box"></i>
+        <span>Orders</span>
+      </button>
+      <button class="mob-nav-btn" onclick="toggleUserMenu()">
+        <i class="fas fa-user"></i>
+        <span>Account</span>
+      </button>
+    </nav>
 
     <!-- Cart Sidebar -->
     <div id="cart-overlay" class="overlay hidden" onclick="toggleCart()"></div>

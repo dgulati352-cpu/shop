@@ -616,6 +616,10 @@ body {
   background: var(--gray-light);
 }
 
+#mobile-nav {
+  display: none;
+}
+
 /* ==================== CATEGORY STRIP ==================== */
 #category-strip {
   background: white;
@@ -2640,18 +2644,46 @@ body {
 
   /* Mobile nav */
   #mobile-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--gray-medium);
     padding: 6px 0;
     padding-bottom: max(6px, env(safe-area-inset-bottom));
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
   }
 
   .mob-nav-btn {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--gray-dark);
     font-size: 10px;
-    gap: 2px;
+    font-weight: 600;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    width: 20%;
   }
 
   .mob-nav-btn i {
-    font-size: 18px;
+    font-size: 20px;
+    margin-bottom: 2px;
   }
+
+  .mob-nav-btn.active {
+    color: var(--primary-color);
+  }
+
+
 
   /* Toast */
   #toast-container {
