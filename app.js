@@ -1046,8 +1046,32 @@ async function placeOrder() {
   const finalEmail = document.getElementById('checkout-email-input').value.trim();
   const finalAddress = document.getElementById('checkout-address-input').value.trim();
 
-  if (!finalName || !finalPhone || !finalEmail || !finalAddress) {
-    showToast('Please fill all contact and delivery details', 'error');
+  if (!finalName) {
+    showToast('Please enter your full name', 'error');
+    const input = document.getElementById('checkout-name-input');
+    input.scrollIntoView({behavior: 'smooth', block: 'center'});
+    input.focus();
+    return;
+  }
+  if (!finalPhone) {
+    showToast('Please enter your phone number', 'error');
+    const input = document.getElementById('checkout-phone-input');
+    input.scrollIntoView({behavior: 'smooth', block: 'center'});
+    input.focus();
+    return;
+  }
+  if (!finalEmail) {
+    showToast('Please enter your email address', 'error');
+    const input = document.getElementById('checkout-email-input');
+    input.scrollIntoView({behavior: 'smooth', block: 'center'});
+    input.focus();
+    return;
+  }
+  if (!finalAddress) {
+    showToast('Please enter your delivery address', 'error');
+    const input = document.getElementById('checkout-address-input');
+    input.scrollIntoView({behavior: 'smooth', block: 'center'});
+    input.focus();
     return;
   }
 
