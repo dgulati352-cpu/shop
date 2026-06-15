@@ -772,6 +772,27 @@ function closeProductModal() {
   document.getElementById('product-modal').classList.add('hidden');
 }
 
+// ==================== NAVIGATION ACTIONS ====================
+
+function toggleUserMenu() {
+  const dropdown = document.getElementById('user-dropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('hidden');
+    if (!dropdown.classList.contains('hidden') && window.innerWidth <= 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+}
+
+function focusSearch() {
+  const isMobile = window.innerWidth <= 768;
+  const searchInput = document.getElementById(isMobile ? 'mobile-search-input' : 'search-input');
+  if (searchInput) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => searchInput.focus(), 300);
+  }
+}
+
 // ==================== CART ACTIONS ====================
 
 function toggleCart() {
