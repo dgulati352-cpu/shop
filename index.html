@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=1.1.10">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -64,16 +64,16 @@
           <div id="search-dropdown" class="search-dropdown hidden"></div>
         </div>
         <div class="nav-right">
-          <button id="install-app-btn" class="nav-icon-btn hidden" onclick="promptAppInstall()" style="background:var(--primary);color:white;border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;margin-right:8px;white-space:nowrap;">
+          <button id="install-app-btn" class="nav-icon-btn mobile-hidden hidden" onclick="promptAppInstall()" style="background:var(--primary);color:white;border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;margin-right:8px;white-space:nowrap;">
             <i class="fas fa-download"></i> Get App
           </button>
-          <button id="cart-toggle" class="nav-icon-btn" onclick="toggleCart()">
+          <button id="cart-toggle" class="nav-icon-btn mobile-hidden" onclick="toggleCart()">
             <i class="fas fa-shopping-cart"></i>
             <span id="cart-badge" class="badge hidden">0</span>
           </button>
-          <button class="nav-icon-btn" onclick="showOrders()"><i class="fas fa-box"></i></button>
-          <div class="user-menu" onclick="toggleUserMenu()">
-            <div class="user-avatar" id="user-avatar">U</div>
+          <button class="nav-icon-btn mobile-hidden" onclick="showOrders()"><i class="fas fa-box"></i></button>
+          <div class="user-menu" onclick="toggleUserMenu(event)">
+            <div class="user-avatar mobile-hidden" id="user-avatar">U</div>
             <div id="user-dropdown" class="user-dropdown hidden">
               <div class="user-info">
                 <strong id="dropdown-name">User</strong>
@@ -82,6 +82,7 @@
               <div class="dropdown-divider"></div>
               <button onclick="showOrders()"><i class="fas fa-box"></i> My Orders</button>
               <button onclick="showAddresses()"><i class="fas fa-map-marker-alt"></i> Addresses</button>
+              <button id="menu-install-btn" class="hidden" onclick="promptAppInstall()"><i class="fas fa-download"></i> Download App</button>
               <button onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
           </div>
@@ -140,6 +141,20 @@
     </main>
 
     <!-- Mobile Bottom Navigation -->
+    <div id="sticky-install-banner" class="sticky-install-banner hidden">
+      <div class="banner-content">
+        <div class="banner-icon"><img src="assets/icon-192.png" alt="App Icon" style="width: 40px; height: 40px; border-radius: 8px;"></div>
+        <div class="banner-text">
+          <strong>Get the QuickShop App</strong>
+          <span>Faster checkout, exclusive offers!</span>
+        </div>
+      </div>
+      <div class="banner-actions">
+        <button class="btn-primary-sm" onclick="promptAppInstall()">Download</button>
+        <button class="btn-close-banner" onclick="document.getElementById('sticky-install-banner').classList.add('hidden'); localStorage.setItem('qs_hide_install_banner', 'true');"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+
     <nav id="mobile-nav" class="mobile-nav-bar">
       <button class="mob-nav-btn active" onclick="goHome()">
         <i class="fas fa-home"></i>
@@ -158,7 +173,7 @@
         <i class="fas fa-box"></i>
         <span>Orders</span>
       </button>
-      <button class="mob-nav-btn" onclick="toggleUserMenu()">
+      <button class="mob-nav-btn" onclick="toggleUserMenu(event)">
         <i class="fas fa-user"></i>
         <span>Account</span>
       </button>
@@ -318,6 +333,20 @@
       </div>
     </div>
 
+    <!-- Android Install Instruction Modal -->
+    <div id="android-install-modal" class="modal hidden">
+      <div class="modal-content" style="text-align:center; padding: 40px 20px;">
+        <h2 style="margin-bottom: 16px;">Install QuickShop</h2>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Install this app on your device to order faster.</p>
+        <div style="background: var(--bg-input); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 24px;">
+          <p style="margin: 0 0 12px 0;"><strong>1.</strong> Tap the <strong>3 dots</strong> icon <i class="fas fa-ellipsis-v" style="color: var(--primary);"></i> at the top right of your browser.</p>
+          <p style="margin: 0 0 12px 0;"><strong>2.</strong> Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>.</p>
+          <p style="margin: 0; font-size: 13px; color: var(--warning);"><i class="fas fa-info-circle"></i> <em>If you opened this from WhatsApp/Instagram, please open in Chrome first!</em></p>
+        </div>
+        <button class="btn-primary" onclick="document.getElementById('android-install-modal').classList.add('hidden')">Got it!</button>
+      </div>
+    </div>
+
     <!-- Product Detail Modal -->
     <div id="product-modal" class="modal hidden">
       <div class="modal-content product-detail-content">
@@ -357,8 +386,8 @@
         </div>
         <div class="footer-links">
           <h4>Support</h4>
-          <a href="#">Help Center</a>
-          <a href="#">Contact Us</a>
+          <a href="https://wa.me/918791416116" target="_blank">Help Center</a>
+          <a href="https://wa.me/918791416116" target="_blank">Contact Us</a>
         </div>
       </div>
       <div class="footer-bottom"><p>&copy; 2026 QuickShop. All rights reserved.</p></div>
@@ -370,7 +399,7 @@
       <button class="mob-nav-btn" onclick="document.getElementById('search-input').focus(); setMobileActive(this)"><i class="fas fa-search"></i><span>Search</span></button>
       <button class="mob-nav-btn" onclick="toggleCart(); setMobileActive(this)"><i class="fas fa-shopping-cart"></i><span>Cart</span><span id="mob-cart-badge" class="badge hidden">0</span></button>
       <button class="mob-nav-btn" onclick="showOrders(); setMobileActive(this)"><i class="fas fa-box"></i><span>Orders</span></button>
-      <button class="mob-nav-btn" onclick="toggleUserMenu(); setMobileActive(this)"><i class="fas fa-user"></i><span>Account</span></button>
+      <button class="mob-nav-btn" onclick="toggleUserMenu(event); setMobileActive(this)"><i class="fas fa-user"></i><span>Account</span></button>
     </nav>
   </div>
 
@@ -387,15 +416,44 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
   
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(err => {
-          console.warn('Service worker registration failed:', err);
+    const CURRENT_VERSION = 'v1.1.10';
+    if (localStorage.getItem('qs_app_version') !== CURRENT_VERSION) {
+      localStorage.setItem('qs_app_version', CURRENT_VERSION);
+      localStorage.removeItem('qs_products'); // also clear products cache
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          let promises = [];
+          for (let reg of registrations) {
+            promises.push(reg.unregister());
+          }
+          Promise.all(promises).then(() => {
+            caches.keys().then(names => {
+              let cachePromises = [];
+              for (let name of names) {
+                cachePromises.push(caches.delete(name));
+              }
+              Promise.all(cachePromises).then(() => {
+                window.location.reload();
+              });
+            });
+          });
+        }).catch(() => {
+          window.location.reload();
         });
-      });
+      } else {
+        window.location.reload();
+      }
+    } else {
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js?v=11').catch(err => {
+            console.warn('Service worker registration failed:', err);
+          });
+        });
+      }
     }
   </script>
   
-  <script src="app.js"></script>
+  <script src="app.js?v=1.1.10"></script>
 </body>
 </html>

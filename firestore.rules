@@ -41,5 +41,15 @@ service cloud.firestore {
     match /counters/{counterId} {
       allow read, write: if true;
     }
+
+    // Store settings (admin configurable)
+    match /settings/{settingId} {
+      allow read, write: if true;
+    }
+
+    // Hero banners
+    match /banners/{bannerId} {
+      allow read, write: if true;
+    }
   }
 }

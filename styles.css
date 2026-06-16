@@ -25,6 +25,14 @@
   font-family: var(--font-sans);
 }
 
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   background-color: #f4f6f8;
   color: var(--dark-color);
@@ -36,6 +44,8 @@ body {
 .screen {
   display: none;
   width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .screen.active {
@@ -359,6 +369,8 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 100%;
+  max-width: 100%;
 }
 
 .nav-inner {
@@ -627,6 +639,8 @@ body {
   overflow-x: auto;
   white-space: nowrap;
   scrollbar-width: none;
+  width: 100%;
+  max-width: 100%;
 }
 
 #category-strip::-webkit-scrollbar {
@@ -661,18 +675,22 @@ body {
 
 /* ==================== HERO BANNER ==================== */
 #hero-banner {
+  width: 100%;
   max-width: 1200px;
   margin: 20px auto 0;
   padding: 0 20px;
   position: relative;
   overflow: hidden;
   border-radius: var(--border-radius-lg);
+  box-sizing: border-box;
 }
 
 .hero-slides {
   display: flex;
   transition: transform 0.5s ease-in-out;
   border-radius: var(--border-radius-lg);
+  width: 100%;
+  max-width: 100%;
 }
 
 .hero-slide {
@@ -2261,6 +2279,15 @@ body {
     gap: 8px;
   }
 
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .nav-right .user-menu {
+    display: block !important;
+    position: static;
+  }
+
   .nav-icon-btn {
     width: 36px;
     height: 36px;
@@ -2273,7 +2300,16 @@ body {
     font-size: 13px;
   }
 
+  html, body {
+    overflow-x: hidden;
+  }
+
   /* Hero */
+  #hero-banner {
+    padding: 0 12px;
+    margin-top: 12px;
+  }
+
   .hero-slide {
     height: 140px;
     padding: 16px 20px;
@@ -2658,8 +2694,27 @@ body {
 
   /* User dropdown */
   .user-dropdown {
-    width: calc(100vw - 24px);
-    right: -8px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    border-top: 1px solid var(--gray-medium);
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
   }
 
   /* Orders modal */
@@ -2816,5 +2871,71 @@ body {
 
   .category-card:hover {
     transform: none;
+}
+
+/* ==================== STICKY INSTALL BANNER ==================== */
+.sticky-install-banner {
+  position: fixed;
+  bottom: 70px; /* Above the mobile nav */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 400px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  z-index: 998; /* Below modal overlay but above most things */
+  border: 1px solid var(--gray-medium);
+}
+.sticky-install-banner.hidden {
+  display: none !important;
+}
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.banner-text {
+  display: flex;
+  flex-direction: column;
+}
+.banner-text strong {
+  font-size: 14px;
+  color: var(--dark-color);
+}
+.banner-text span {
+  font-size: 12px;
+  color: var(--gray-dark);
+}
+.banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.btn-primary-sm {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-close-banner {
+  background: transparent;
+  border: none;
+  color: var(--gray-dark);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+@media (min-width: 769px) {
+  .sticky-install-banner {
+    bottom: 20px; /* On desktop, rest at the bottom */
   }
 }

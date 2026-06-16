@@ -2,10 +2,14 @@
   "name": "QuickShop - Local Store",
   "short_name": "QuickShop",
   "description": "Order groceries and essentials from your local shop. Fast delivery, great prices.",
-  "start_url": "/index.html",
+  "start_url": "/index.html?source=pwa",
+  "id": "/?source=pwa",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#10b981",
+  "categories": ["shopping", "lifestyle", "food"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "assets/icon-192.png",
@@ -18,6 +22,20 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/screenshot-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "assets/screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }

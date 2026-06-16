@@ -1,9 +1,9 @@
-const CACHE_NAME = 'quickshop-cache-v2';
+const CACHE_NAME = 'quickshop-cache-v11';
 const urlsToCache = [
   '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
+  '/index.html?v=1.1.10',
+  '/styles.css?v=1.1.10',
+  '/app.js?v=1.1.10',
   '/manifest.json',
   '/assets/icon-192.png',
   '/assets/icon-512.png',
@@ -11,6 +11,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -20,29 +21,38 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Network First strategy
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
+        // If we got a valid response, cache it and return
+        if (response && response.status === 200 && response.type === 'basic') {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
         }
-        return fetch(event.request);
+        return response;
+      })
+      .catch(() => {
+        // Fallback to cache if network is unavailable
+        return caches.match(event.request);
       })
   );
 });
 
-// Clear old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
+    clients.claim().then(() => {
+      return caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheName !== CACHE_NAME) {
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      });
     })
   );
 });
