@@ -1,9 +1,9 @@
-const CACHE_NAME = 'quickshop-cache-v20';
+const CACHE_NAME = 'quickshop-cache-v21';
 const urlsToCache = [
   '/',
-  '/index.html?v=1.1.19',
-  '/styles.css?v=1.1.19',
-  '/app.js?v=1.1.19',
+  '/index.html?v=1.1.20',
+  '/styles.css?v=1.1.20',
+  '/app.js?v=1.1.20',
   '/manifest.json',
   '/assets/icon-192.png',
   '/assets/icon-512.png',

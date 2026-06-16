@@ -87,11 +87,24 @@ async function initApp() {
       const redirectResult = await firebase.auth().getRedirectResult();
       if (redirectResult && redirectResult.user) {
         const user = redirectResult.user;
+        
+        let existingCust = null;
+        if (db) {
+          try {
+            const custSnap = await db.collection('customers').doc(user.email).get();
+            if (custSnap.exists) {
+              existingCust = custSnap.data();
+            }
+          } catch (e) {
+            console.warn('Failed to fetch existing customer on redirect:', e);
+          }
+        }
+
         state.currentUser = {
-          name: user.displayName || 'Google User',
+          name: existingCust?.name || user.displayName || 'Google User',
           email: user.email,
-          phone: user.phoneNumber || '',
-          address: 'Update your address',
+          phone: existingCust?.phone || user.phoneNumber || '',
+          address: existingCust?.address || 'Update your address',
           role: 'customer',
           googleAuth: true
         };
@@ -102,9 +115,9 @@ async function initApp() {
           await db.collection('customers').doc(user.email).set({
             name: state.currentUser.name,
             email: user.email,
-            phone: user.phoneNumber || '',
-            address: 'Update your address',
-            joinedAt: new Date().toISOString()
+            phone: state.currentUser.phone,
+            address: state.currentUser.address,
+            joinedAt: existingCust?.joinedAt || new Date().toISOString()
           }, { merge: true }).catch(err => console.warn('Customer sync failed:', err));
         }
         
@@ -416,15 +429,27 @@ function handleGoogleLogin() {
       });
   } else {
     firebase.auth().signInWithPopup(provider)
-      .then((result) => {
+      .then(async (result) => {
         const user = result.user;
         
+        let existingCust = null;
+        if (db) {
+          try {
+            const custSnap = await db.collection('customers').doc(user.email).get();
+            if (custSnap.exists) {
+              existingCust = custSnap.data();
+            }
+          } catch (e) {
+            console.warn('Failed to fetch existing customer on popup login:', e);
+          }
+        }
+
         // Update our state with Firebase User details
         state.currentUser = {
-          name: user.displayName || 'Google User',
+          name: existingCust?.name || user.displayName || 'Google User',
           email: user.email,
-          phone: user.phoneNumber || '',
-          address: 'Update your address',
+          phone: existingCust?.phone || user.phoneNumber || '',
+          address: existingCust?.address || 'Update your address',
           role: 'customer',
           googleAuth: true
         };
@@ -432,13 +457,15 @@ function handleGoogleLogin() {
         localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
 
         // Save to Firestore customers collection
-        db.collection('customers').doc(user.email).set({
-          name: state.currentUser.name,
-          email: user.email,
-          phone: user.phoneNumber || '',
-          address: 'Update your address',
-          joinedAt: new Date().toISOString()
-        }, { merge: true }).catch(err => console.warn('Customer sync failed:', err));
+        if (db) {
+          db.collection('customers').doc(user.email).set({
+            name: state.currentUser.name,
+            email: user.email,
+            phone: state.currentUser.phone,
+            address: state.currentUser.address,
+            joinedAt: existingCust?.joinedAt || new Date().toISOString()
+          }, { merge: true }).catch(err => console.warn('Customer sync failed:', err));
+        }
         
         // Hide loading overlay
         document.getElementById('loading-overlay').classList.add('hidden');
@@ -1710,6 +1737,15 @@ async function placeOrder() {
     state.currentUser.address = finalAddress;
     localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
 
+    if (db) {
+      db.collection('customers').doc(finalEmail).set({
+        name: finalName,
+        email: finalEmail,
+        phone: finalPhone,
+        address: finalAddress
+      }, { merge: true }).catch(err => console.warn('Customer details sync failed on order:', err));
+    }
+
     // Payment Verification
     const checkedPayment = document.querySelector('input[name="payment"]:checked');
     const paymentMethod = checkedPayment ? checkedPayment.value : 'cod';
@@ -1879,6 +1915,13 @@ function showAddresses() {
     if (trimmedAddress) {
       state.currentUser.address = trimmedAddress;
       localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+      
+      if (db) {
+        db.collection('customers').doc(state.currentUser.email).set({
+          address: trimmedAddress
+        }, { merge: true }).catch(err => console.warn('Address sync failed:', err));
+      }
+      
       showToast('Delivery address updated successfully!', 'success');
       
       // If user avatar menu is open, we can update details
