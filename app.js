@@ -59,7 +59,9 @@ let state = {
   storeSettings: {},
   currentCategory: null,
   activeAdminTab: 'dashboard',
-  banners: []
+  banners: [],
+  articlesListenerActive: false,
+  ordersListenerActive: false
 };
 
 function saveCartState() {
@@ -76,7 +78,8 @@ async function initApp() {
   try {
     const savedCart = localStorage.getItem('qs_cart');
     if (savedCart) {
-      state.cart = JSON.parse(savedCart);
+      const parsedCart = JSON.parse(savedCart);
+      state.cart = Array.isArray(parsedCart) ? parsedCart : [];
     }
   } catch(e) {
     console.warn('Failed to load cart:', e);
@@ -102,39 +105,58 @@ async function initApp() {
     localStorage.setItem('qs_force_updated_categories_v3', 'true');
   }
 
-  try {
-    const prodsSnap = await db.collection('products').get();
-    if (!prodsSnap.empty) {
-      state.products = prodsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      localStorage.setItem('qs_products', JSON.stringify(state.products));
-    } else {
-      throw new Error('No products in Firebase');
+  // Load database data — store the promise so auth handler can await it
+  const dbLoadPromise = (async () => {
+    try {
+      const prodsSnap = await db.collection('products').get();
+      if (!prodsSnap.empty) {
+        state.products = prodsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        localStorage.setItem('qs_products', JSON.stringify(state.products));
+      } else {
+        throw new Error('No products in Firebase');
+      }
+    } catch(e) {
+      let parsed = null;
+      try {
+        const savedProducts = localStorage.getItem('qs_products');
+        if (savedProducts) parsed = JSON.parse(savedProducts);
+      } catch(e2){}
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        state.products = parsed;
+      } else {
+        state.products = INITIAL_PRODUCTS;
+        localStorage.setItem('qs_products', JSON.stringify(state.products));
+      }
     }
-  } catch(e) {
-    const savedProducts = localStorage.getItem('qs_products');
-    if (savedProducts && JSON.parse(savedProducts).length > 0) {
-      state.products = JSON.parse(savedProducts);
-    } else {
-      state.products = INITIAL_PRODUCTS;
-      localStorage.setItem('qs_products', JSON.stringify(state.products));
-    }
-  }
 
-  try {
-    const catSnap = await db.collection('categories').orderBy('order').get();
-    if (!catSnap.empty) {
-      state.categories = catSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    try {
+      const catSnap = await db.collection('categories').orderBy('order').get();
+      if (!catSnap.empty) {
+        state.categories = catSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      }
+    } catch(e) {
+      state.categories = [];
     }
-  } catch(e) {
-    state.categories = [];
-  }
+  })();
+
+  // Seed from localStorage immediately so first render has data
+  try {
+    const savedProducts = localStorage.getItem('qs_products');
+    if (savedProducts) {
+      const parsed = JSON.parse(savedProducts);
+      if (Array.isArray(parsed) && parsed.length > 0) state.products = parsed;
+    }
+  } catch(e) {}
+
+  // Expose promise for auth handler
+  window._dbLoadPromise = dbLoadPromise;
 
   try {
     if (db) {
       db.collection('banners').onSnapshot(snap => {
         state.banners = snap.docs.map(d => d.data());
         state.banners.sort((a,b) => (a.order || 0) - (b.order || 0));
-        if (document.getElementById('hero-slides')) {
+        if (document.getElementById('hero-slides') && state.currentUser) {
           renderHeroBanner();
         }
       }, err => console.warn('Banners load failed:', err));
@@ -181,7 +203,8 @@ async function initApp() {
   try {
     const savedOrders = localStorage.getItem('qs_orders');
     if (savedOrders) {
-      state.orders = JSON.parse(savedOrders);
+      const parsedOrders = JSON.parse(savedOrders);
+      state.orders = Array.isArray(parsedOrders) ? parsedOrders : [];
     } else {
       state.orders = [];
       localStorage.setItem('qs_orders', JSON.stringify(state.orders));
@@ -208,7 +231,7 @@ async function initApp() {
         const user = redirectResult.user;
         
         let existingCust = null;
-        if (db) {
+        if (db && user.email) {
           try {
             const custSnap = await db.collection('customers').doc(user.email).get();
             if (custSnap.exists) {
@@ -221,7 +244,7 @@ async function initApp() {
 
         state.currentUser = {
           name: existingCust?.name || user.displayName || 'Google User',
-          email: user.email,
+          email: user.email || '',
           phone: existingCust?.phone || user.phoneNumber || '',
           address: existingCust?.address || 'Update your address',
           role: 'customer',
@@ -230,7 +253,7 @@ async function initApp() {
         localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
         
         // Save to Firestore customers collection in background
-        if (db) {
+        if (db && user.email) {
           db.collection('customers').doc(user.email).set({
             name: state.currentUser.name,
             email: user.email,
@@ -241,6 +264,9 @@ async function initApp() {
         }
         
         showToast(`Welcome, ${state.currentUser.name}! Signed in ✓`);
+        // Show store screen immediately on successful redirect, don't wait for observer
+        showScreen('store-screen');
+        initStorefront();
       }
     } catch (error) {
       console.error("Error with Google Redirect Sign-In:", error);
@@ -256,8 +282,7 @@ async function initApp() {
       if (loadingOverlay) loadingOverlay.classList.add('hidden');
 
       if (user) {
-        // User is signed in to Firebase Auth!
-        // Show store screen instantly with cached or default details to prevent blocking/hanging
+        // Set user state immediately from cache
         const savedUser = localStorage.getItem('qs_current_user');
         let parsed = null;
         try {
@@ -267,10 +292,9 @@ async function initApp() {
         if (parsed && parsed.email === user.email) {
           state.currentUser = parsed;
         } else {
-          // Initialize with Google details immediately
           state.currentUser = {
             name: user.displayName || 'Google User',
-            email: user.email,
+            email: user.email || '',
             phone: user.phoneNumber || '',
             address: 'Update your address',
             role: 'customer',
@@ -279,59 +303,71 @@ async function initApp() {
           localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
         }
 
-        // Show store screen immediately!
+        // Wait for DB products to load (with 4s timeout) then show store
+        try {
+          await Promise.race([
+            window._dbLoadPromise,
+            new Promise(res => setTimeout(res, 4000))
+          ]);
+        } catch(e) { /* ignore, use whatever products we have */ }
+
+        // Ensure we always have some products to render
+        if (!state.products || state.products.length === 0) {
+          state.products = INITIAL_PRODUCTS;
+        }
+
         showScreen('store-screen');
         initStorefront();
 
-        // Sync and load fresh profile data from Firestore in the background
-        if (db) {
+        // Sync profile from Firestore in background
+        if (db && user.email) {
           db.collection('customers').doc(user.email).get()
             .then(custSnap => {
-              let existingCust = null;
               if (custSnap.exists) {
-                existingCust = custSnap.data();
+                const existingCust = custSnap.data();
+                state.currentUser.name = existingCust.name || state.currentUser.name;
+                state.currentUser.phone = existingCust.phone || state.currentUser.phone;
+                state.currentUser.address = existingCust.address || state.currentUser.address;
+                localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+                const avatarEl = document.getElementById('user-avatar');
+                if (avatarEl) avatarEl.innerText = state.currentUser.name.charAt(0).toUpperCase();
+                const nameEl = document.getElementById('dropdown-name');
+                if (nameEl) nameEl.innerText = state.currentUser.name;
+                const emailEl = document.getElementById('dropdown-email');
+                if (emailEl) emailEl.innerText = state.currentUser.email;
+                db.collection('customers').doc(user.email).set({
+                  name: state.currentUser.name,
+                  email: user.email,
+                  phone: state.currentUser.phone,
+                  address: state.currentUser.address,
+                  joinedAt: existingCust.joinedAt || new Date().toISOString()
+                }, { merge: true }).catch(err => console.warn('Customer profile sync failed:', err));
               }
-              
-              // Update state details
-              state.currentUser.name = existingCust?.name || state.currentUser.name;
-              state.currentUser.phone = existingCust?.phone || state.currentUser.phone;
-              state.currentUser.address = existingCust?.address || state.currentUser.address;
-              localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
-
-              // Update active header fields
-              const avatarEl = document.getElementById('user-avatar');
-              if (avatarEl) avatarEl.innerText = state.currentUser.name.charAt(0).toUpperCase();
-              const nameEl = document.getElementById('dropdown-name');
-              if (nameEl) nameEl.innerText = state.currentUser.name;
-              const emailEl = document.getElementById('dropdown-email');
-              if (emailEl) emailEl.innerText = state.currentUser.email;
-
-              // Write/Sync user details back to Firestore to ensure consistency
-              db.collection('customers').doc(user.email).set({
-                name: state.currentUser.name,
-                email: user.email,
-                phone: state.currentUser.phone,
-                address: state.currentUser.address,
-                joinedAt: existingCust?.joinedAt || new Date().toISOString()
-              }, { merge: true }).catch(err => console.warn('Customer profile sync failed:', err));
             })
-            .catch(e => console.warn('Failed to fetch existing customer on auth change:', e));
+            .catch(e => console.warn('Failed to fetch customer on auth change:', e));
         }
       } else {
-        // No Firebase user. Check if there is a local credential session (non-Google)
+        // No Firebase user — check for local (non-Google) session
         const savedUser = localStorage.getItem('qs_current_user');
         if (savedUser) {
           try {
             const parsed = JSON.parse(savedUser);
             if (parsed && !parsed.googleAuth) {
               state.currentUser = parsed;
+              // Ensure products for local-auth users too
+              try {
+                await Promise.race([
+                  window._dbLoadPromise,
+                  new Promise(res => setTimeout(res, 4000))
+                ]);
+              } catch(e) {}
+              if (!state.products || state.products.length === 0) state.products = INITIAL_PRODUCTS;
               initStorefront();
               showScreen('store-screen');
               return;
             }
           } catch(e) {}
         }
-        // No session, redirect to authentication screen
         showScreen('auth-screen');
       }
     });
@@ -561,6 +597,8 @@ function handleLogout() {
   state.currentUser = null;
   state.cart = [];
   state.appliedCoupon = null;
+  state.articlesListenerActive = false;
+  state.ordersListenerActive = false;
   localStorage.removeItem('qs_current_user');
   localStorage.removeItem('qs_cart');
   showToast('Logged out successfully');
@@ -572,11 +610,19 @@ function handleLogout() {
 // ==================== CUSTOMER STOREFRONT ====================
 
 function initStorefront() {
+  if (!state.currentUser) return;
+
   // Update header text
-  document.getElementById('user-avatar').innerText = state.currentUser.name.charAt(0).toUpperCase();
-  document.getElementById('dropdown-name').innerText = state.currentUser.name;
-  document.getElementById('dropdown-email').innerText = state.currentUser.email;
-  document.getElementById('delivery-time').innerText = state.storeSettings.deliveryTime;
+  const userName = state.currentUser.name || 'Google User';
+  const avatarEl = document.getElementById('user-avatar');
+  if (avatarEl) avatarEl.innerText = userName.charAt(0).toUpperCase();
+  const nameEl = document.getElementById('dropdown-name');
+  if (nameEl) nameEl.innerText = userName;
+  const emailEl = document.getElementById('dropdown-email');
+  if (emailEl) emailEl.innerText = state.currentUser.email || '';
+  
+  const deliveryTimeEl = document.getElementById('delivery-time');
+  if (deliveryTimeEl) deliveryTimeEl.innerText = state.storeSettings?.deliveryTime || '10 min';
 
   // Toggle download app button in menu
   const menuInstallBtn = document.getElementById('menu-install-btn');
@@ -600,7 +646,8 @@ function initStorefront() {
 
 // Real-time listener for articles from Firestore
 function initArticlesListener() {
-  if (!db) return;
+  if (!db || state.articlesListenerActive) return;
+  state.articlesListenerActive = true;
   db.collection('articles')
     .where('published', '==', true)
     .orderBy('createdAt', 'desc')
@@ -614,7 +661,8 @@ function initArticlesListener() {
 
 // Real-time listener for customer orders
 function initOrdersListener() {
-  if (!db || !state.currentUser) return;
+  if (!db || !state.currentUser || !state.currentUser.email || state.ordersListenerActive) return;
+  state.ordersListenerActive = true;
   
   if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission();
@@ -633,7 +681,7 @@ function initOrdersListener() {
         const newData = doc.data();
         firebaseOrders.push(newData);
         
-        if (!isFirstLoad) {
+        if (!isFirstLoad && Array.isArray(state.orders)) {
           const oldData = state.orders.find(o => o.id === newData.id);
           if (oldData && oldData.status !== newData.status) {
             statusChanged = true;
@@ -1027,16 +1075,14 @@ function renderProductCard(p) {
 
 // Navigation & Category Views
 function goHome() {
-  document.getElementById('hero-banner').classList.remove('hidden');
-  document.getElementById('categories-section').classList.remove('hidden');
-  document.getElementById('product-sections').classList.remove('hidden');
-  document.getElementById('articles-section').classList.remove('hidden');
-  document.getElementById('search-results').classList.add('hidden');
-  document.getElementById('category-view').classList.add('hidden');
+  const ids = ['hero-banner', 'categories-section', 'product-sections', 'articles-section'];
+  ids.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); });
+  ['search-results', 'category-view'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('hidden'); });
 
-  // Reset active pills
+  // Reset active pills (null-safe)
   document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
-  document.querySelector('.category-pill:first-child').classList.add('active');
+  const firstPill = document.querySelector('.category-pill:first-child');
+  if (firstPill) firstPill.classList.add('active');
 }
 
 function showCategory(catName) {
