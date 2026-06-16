@@ -2940,3 +2940,429 @@ body {
     bottom: 20px; /* On desktop, rest at the bottom */
   }
 }
+
+/* ==================== DARK MODE THEME OVERRIDES ==================== */
+body {
+  background-color: #090d16 !important;
+  color: #f9fafb !important;
+}
+
+/* Header & Navigation */
+#main-nav {
+  background: #111928 !important;
+  border-bottom: 1px solid #1f2a37 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.nav-brand {
+  color: #f9fafb !important;
+}
+
+.nav-brand span {
+  color: #10b981 !important;
+}
+
+.search-container {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+}
+
+.search-container input {
+  background: transparent !important;
+  color: #f9fafb !important;
+}
+
+.search-container input::placeholder {
+  color: #9ca3af !important;
+}
+
+.nav-icon-btn {
+  color: #f9fafb !important;
+}
+
+.nav-icon-btn:hover {
+  background: #1f2a37 !important;
+}
+
+.badge {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}
+
+/* Category Strip */
+#category-strip {
+  background: #111928 !important;
+  border-bottom: 1px solid #1f2a37 !important;
+}
+
+.category-pill {
+  background: #1f2a37 !important;
+  color: #f9fafb !important;
+  border: 1px solid #374151 !important;
+}
+
+.category-pill:hover, .category-pill.active {
+  background: #10b981 !important;
+  color: #ffffff !important;
+  border-color: #10b981 !important;
+}
+
+/* Main Sections */
+#categories-section, .store-section, #search-results, #category-view, #articles-section {
+  background: #111928 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid #1f2a37 !important;
+}
+
+.section-title {
+  color: #f9fafb !important;
+  border-bottom: 1px solid #1f2a37 !important;
+}
+
+/* Cards & Content */
+.category-card {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+}
+
+.category-name {
+  color: #f9fafb !important;
+}
+
+.product-card {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.product-card:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3) !important;
+  border-color: #10b981 !important;
+}
+
+.product-name {
+  color: #f9fafb !important;
+}
+
+.product-price {
+  color: #f9fafb !important;
+}
+
+.product-mrp {
+  color: #9ca3af !important;
+}
+
+.product-unit {
+  color: #9ca3af !important;
+}
+
+/* Add Button & Quantity Controls */
+.add-btn {
+  color: #10b981 !important;
+  border: 1px solid #10b981 !important;
+  background: transparent !important;
+}
+
+.add-btn:hover {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.quantity-controls {
+  background: #10b981 !important;
+}
+
+/* Modals & Popups */
+.modal-content {
+  background: #111928 !important;
+  color: #f9fafb !important;
+  border: 1px solid #1f2a37 !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid #1f2a37 !important;
+}
+
+.modal-header h3 {
+  color: #f9fafb !important;
+}
+
+.modal-header .close-btn {
+  color: #9ca3af !important;
+}
+
+.modal-header .close-btn:hover {
+  color: #10b981 !important;
+}
+
+/* Inputs & Forms */
+.input-group {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+}
+
+.input-group i {
+  color: #9ca3af !important;
+}
+
+.input-group input, .input-group textarea, .input-group select {
+  background: transparent !important;
+  color: #f9fafb !important;
+}
+
+.input-group input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* User Profile & Dropdown */
+.user-dropdown {
+  background: #111928 !important;
+  border: 1px solid #1f2a37 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+.user-dropdown-header {
+  border-bottom: 1px solid #1f2a37 !important;
+}
+
+.user-dropdown-header strong {
+  color: #f9fafb !important;
+}
+
+.user-dropdown-header small {
+  color: #9ca3af !important;
+}
+
+.user-dropdown-item {
+  color: #f9fafb !important;
+}
+
+.user-dropdown-item:hover {
+  background: #1f2a37 !important;
+  color: #10b981 !important;
+}
+
+/* Checkout */
+.checkout-section {
+  border-bottom: 1px solid #1f2a37 !important;
+}
+
+.checkout-section h4 {
+  color: #f9fafb !important;
+}
+
+.checkout-address-box {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+  color: #f9fafb !important;
+}
+
+.payment-option {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+  color: #f9fafb !important;
+}
+
+.payment-option.selected {
+  border-color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.05) !important;
+}
+
+.payment-option strong {
+  color: #f9fafb !important;
+}
+
+.payment-option small {
+  color: #9ca3af !important;
+}
+
+/* Sidebar (Cart Drawer) */
+.sidebar {
+  background: #111928 !important;
+  border-left: 1px solid #1f2a37 !important;
+}
+
+.sidebar-header {
+  border-bottom: 1px solid #1f2a37 !important;
+  background: #111928 !important;
+}
+
+.sidebar-header h3 {
+  color: #f9fafb !important;
+}
+
+.sidebar-header .close-btn {
+  color: #9ca3af !important;
+}
+
+.sidebar-body {
+  background: #090d16 !important;
+}
+
+.empty-state p {
+  color: #f9fafb !important;
+}
+
+.empty-state small {
+  color: #9ca3af !important;
+}
+
+.sidebar-footer {
+  border-top: 1px solid #1f2a37 !important;
+  background: #111928 !important;
+}
+
+.summary-row {
+  color: #9ca3af !important;
+}
+
+.summary-row span:last-child {
+  color: #f9fafb !important;
+}
+
+.summary-row.total span {
+  color: #f9fafb !important;
+}
+
+.coupon-section input {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+  color: #f9fafb !important;
+}
+
+.coupon-section button {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.btn-checkout, .btn-place-order {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.btn-checkout:hover, .btn-place-order:hover {
+  background: #059669 !important;
+}
+
+/* Cart Item in Sidebar */
+.cart-item {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+}
+
+.cart-item-name {
+  color: #f9fafb !important;
+}
+
+.cart-item-price {
+  color: #10b981 !important;
+}
+
+/* Orders List */
+.order-card {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+}
+
+.order-header {
+  border-bottom: 1px solid #374151 !important;
+}
+
+.order-id {
+  color: #f9fafb !important;
+}
+
+.order-total {
+  color: #f9fafb !important;
+}
+
+/* Mobile Nav */
+#mobile-nav {
+  background: #111928 !important;
+  border-top: 1px solid #1f2a37 !important;
+}
+
+.mob-nav-btn {
+  color: #9ca3af !important;
+}
+
+.mob-nav-btn.active, .mob-nav-btn:hover {
+  color: #10b981 !important;
+}
+
+/* Sticky Install Banner */
+.sticky-install-banner {
+  background: #111928 !important;
+  border: 1px solid #1f2a37 !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+.banner-text strong {
+  color: #f9fafb !important;
+}
+
+.banner-text span {
+  color: #9ca3af !important;
+}
+
+.btn-close-banner {
+  color: #9ca3af !important;
+}
+
+/* Skeletons */
+.skeleton {
+  background: #1f2a37 !important;
+}
+
+.skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent) !important;
+}
+
+/* Auth Screens */
+#auth-screen {
+  background: #090d16 !important;
+}
+
+.auth-wrapper {
+  background: #111928 !important;
+  border: 1px solid #1f2a37 !important;
+}
+
+.auth-left {
+  background: #1f2a37 !important;
+  border-right: 1px solid #1f2a37 !important;
+}
+
+.auth-right {
+  background: #111928 !important;
+}
+
+.auth-card h2 {
+  color: #f9fafb !important;
+}
+
+.auth-subtitle {
+  color: #9ca3af !important;
+}
+
+.auth-divider span {
+  background: #111928 !important;
+  color: #9ca3af !important;
+}
+
+.auth-divider::before {
+  background: #374151 !important;
+}
+
+.btn-google {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+  color: #f9fafb !important;
+}
+
+.btn-google:hover {
+  background: #374151 !important;
+}
