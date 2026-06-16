@@ -72,76 +72,7 @@ function saveCartState() {
 
 // Initialize app data on startup
 async function initApp() {
-  // 1. Check Google Sign-In redirect result first (required for standalone PWA / mobile redirects)
-  if (typeof firebase !== 'undefined' && firebase.apps.length) {
-    try {
-      const redirectResult = await firebase.auth().getRedirectResult();
-      if (redirectResult && redirectResult.user) {
-        const user = redirectResult.user;
-        
-        let existingCust = null;
-        if (db) {
-          try {
-            const custSnap = await db.collection('customers').doc(user.email).get();
-            if (custSnap.exists) {
-              existingCust = custSnap.data();
-            }
-          } catch (e) {
-            console.warn('Failed to fetch existing customer on redirect:', e);
-          }
-        }
-
-        state.currentUser = {
-          name: existingCust?.name || user.displayName || 'Google User',
-          email: user.email,
-          phone: existingCust?.phone || user.phoneNumber || '',
-          address: existingCust?.address || 'Update your address',
-          role: 'customer',
-          googleAuth: true
-        };
-        localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
-        
-        // Save to Firestore customers collection
-        if (db) {
-          await db.collection('customers').doc(user.email).set({
-            name: state.currentUser.name,
-            email: user.email,
-            phone: state.currentUser.phone,
-            address: state.currentUser.address,
-            joinedAt: existingCust?.joinedAt || new Date().toISOString()
-          }, { merge: true }).catch(err => console.warn('Customer sync failed:', err));
-        }
-        
-        showToast(`Welcome, ${state.currentUser.name}! Signed in ✓`);
-      }
-    } catch (error) {
-      console.error("Error with Google Redirect Sign-In:", error);
-      showToast(`Google Sign-In failed: ${error.message}`, 'error');
-    }
-  }
-
-  // 2. Check for logged in user session
-  try {
-    const savedUser = localStorage.getItem('qs_current_user');
-    if (savedUser) {
-      state.currentUser = JSON.parse(savedUser);
-      if (state.currentUser) {
-        showScreen('store-screen');
-      } else {
-        showScreen('auth-screen');
-        return;
-      }
-    } else {
-      showScreen('auth-screen');
-      return;
-    }
-  } catch(e) {
-    console.warn('Session corrupted, clearing.', e);
-    localStorage.removeItem('qs_current_user');
-    showScreen('auth-screen');
-    return;
-  }
-
+  // --- A. Load app data first ---
   try {
     const savedCart = localStorage.getItem('qs_cart');
     if (savedCart) {
@@ -269,7 +200,126 @@ async function initApp() {
     });
   }
 
-  initStorefront();
+  // --- B. Check Google Sign-In redirect result first ---
+  if (typeof firebase !== 'undefined' && firebase.apps.length) {
+    try {
+      const redirectResult = await firebase.auth().getRedirectResult();
+      if (redirectResult && redirectResult.user) {
+        const user = redirectResult.user;
+        
+        let existingCust = null;
+        if (db) {
+          try {
+            const custSnap = await db.collection('customers').doc(user.email).get();
+            if (custSnap.exists) {
+              existingCust = custSnap.data();
+            }
+          } catch (e) {
+            console.warn('Failed to fetch existing customer on redirect:', e);
+          }
+        }
+
+        state.currentUser = {
+          name: existingCust?.name || user.displayName || 'Google User',
+          email: user.email,
+          phone: existingCust?.phone || user.phoneNumber || '',
+          address: existingCust?.address || 'Update your address',
+          role: 'customer',
+          googleAuth: true
+        };
+        localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+        
+        // Save to Firestore customers collection in background
+        if (db) {
+          db.collection('customers').doc(user.email).set({
+            name: state.currentUser.name,
+            email: user.email,
+            phone: state.currentUser.phone,
+            address: state.currentUser.address,
+            joinedAt: existingCust?.joinedAt || new Date().toISOString()
+          }, { merge: true }).catch(err => console.warn('Customer sync failed:', err));
+        }
+        
+        showToast(`Welcome, ${state.currentUser.name}! Signed in ✓`);
+      }
+    } catch (error) {
+      console.error("Error with Google Redirect Sign-In:", error);
+      showToast(`Google Sign-In failed: ${error.message}`, 'error');
+    }
+  }
+
+  // --- C. Listen to Authentication State Observer ---
+  if (typeof firebase !== 'undefined' && firebase.apps.length) {
+    firebase.auth().onAuthStateChanged(async (user) => {
+      if (user) {
+        // User is signed in to Firebase Auth!
+        // Retrieve profile details (either cached in localStorage or fresh from Firestore)
+        const savedUser = localStorage.getItem('qs_current_user');
+        let parsed = null;
+        try {
+          if (savedUser) parsed = JSON.parse(savedUser);
+        } catch(e) {}
+
+        if (parsed && parsed.email === user.email) {
+          state.currentUser = parsed;
+        } else {
+          // Fetch from Firestore
+          let existingCust = null;
+          if (db) {
+            try {
+              const custSnap = await db.collection('customers').doc(user.email).get();
+              if (custSnap.exists) existingCust = custSnap.data();
+            } catch(e) {
+              console.warn('Failed to fetch existing customer:', e);
+            }
+          }
+
+          state.currentUser = {
+            name: existingCust?.name || user.displayName || 'Google User',
+            email: user.email,
+            phone: existingCust?.phone || user.phoneNumber || '',
+            address: existingCust?.address || 'Update your address',
+            role: 'customer',
+            googleAuth: true
+          };
+          localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+        }
+
+        initStorefront();
+        showScreen('store-screen');
+      } else {
+        // No Firebase user. Check if there is a local credential session (non-Google)
+        const savedUser = localStorage.getItem('qs_current_user');
+        if (savedUser) {
+          try {
+            const parsed = JSON.parse(savedUser);
+            if (parsed && !parsed.googleAuth) {
+              state.currentUser = parsed;
+              initStorefront();
+              showScreen('store-screen');
+              return;
+            }
+          } catch(e) {}
+        }
+        // No session, redirect to authentication screen
+        showScreen('auth-screen');
+      }
+    });
+  } else {
+    // Firebase is not initialized, fallback to simple localStorage session check
+    const savedUser = localStorage.getItem('qs_current_user');
+    if (savedUser) {
+      try {
+        state.currentUser = JSON.parse(savedUser);
+        initStorefront();
+        showScreen('store-screen');
+      } catch(e) {
+        showScreen('auth-screen');
+      }
+    } else {
+      showScreen('auth-screen');
+    }
+  }
 }
 
 function clearSession() {
