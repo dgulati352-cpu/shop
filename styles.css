@@ -3422,3 +3422,44 @@ body {
 .btn-primary:hover {
   background: #059669 !important;
 }
+
+/* ==================== FOOTER DARK THEME ==================== */
+#main-footer {
+  background: #111928 !important;
+  border-top: 1px solid #1f2a37 !important;
+  color: #9ca3af !important;
+}
+
+.footer-brand {
+  color: #f9fafb !important;
+}
+
+.footer-brand i {
+  color: #10b981 !important;
+}
+
+.footer-brand span {
+  color: #10b981 !important;
+}
+
+.footer-brand p {
+  color: #9ca3af !important;
+}
+
+.footer-links h4 {
+  color: #f9fafb !important;
+}
+
+.footer-links a {
+  color: #9ca3af !important;
+}
+
+.footer-links a:hover {
+  color: #10b981 !important;
+}
+
+.footer-bottom {
+  background: #0d1520 !important;
+  border-top: 1px solid #1f2a37 !important;
+  color: #6b7280 !important;
+}
