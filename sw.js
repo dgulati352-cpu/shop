@@ -1,9 +1,9 @@
-const CACHE_NAME = 'quickshop-cache-v11';
+const CACHE_NAME = 'quickshop-cache-v19';
 const urlsToCache = [
   '/',
-  '/index.html?v=1.1.10',
-  '/styles.css?v=1.1.10',
-  '/app.js?v=1.1.10',
+  '/index.html?v=1.1.18',
+  '/styles.css?v=1.1.18',
+  '/app.js?v=1.1.18',
   '/manifest.json',
   '/assets/icon-192.png',
   '/assets/icon-512.png',
@@ -21,6 +21,14 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Only handle GET requests and skip Firebase Auth / browser extension requests
+  if (event.request.method !== 'GET' || 
+      event.request.url.includes('/__/auth/') || 
+      event.request.url.includes('identitytoolkit') ||
+      !event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
   // Network First strategy
   event.respondWith(
     fetch(event.request)

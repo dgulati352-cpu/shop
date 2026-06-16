@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>QuickShop — Your Local Store, Delivered Fast</title>
   <meta name="description" content="Order groceries and essentials from your local shop. Fast delivery, great prices.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=1.1.10">
+  <link rel="stylesheet" href="styles.css?v=1.1.18">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="QuickShop">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 </head>
+
 <body>
 
   <!-- Toast Container -->
@@ -41,7 +44,16 @@
           <h2>Welcome to QuickShop</h2>
           <p class="auth-subtitle">Sign in to start shopping your essentials</p>
           <button class="btn-google" onclick="handleGoogleLogin()">
-            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-9 20-20 0-1.3-.1-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 19 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.5 35.5 26.9 36 24 36c-5.2 0-9.7-2.9-11.3-7l-6.5 5.1C9.7 39.7 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-1 2.7-3 5-5.6 6.5l6.2 5.2C39.8 36.3 44 30.7 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 48 48">
+              <path fill="#FFC107"
+                d="M43.6 20H24v8h11.3C33.7 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-9 20-20 0-1.3-.1-2.7-.4-4z" />
+              <path fill="#FF3D00"
+                d="M6.3 14.7l6.6 4.8C14.5 16 19 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+              <path fill="#4CAF50"
+                d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.5 35.5 26.9 36 24 36c-5.2 0-9.7-2.9-11.3-7l-6.5 5.1C9.7 39.7 16.4 44 24 44z" />
+              <path fill="#1976D2"
+                d="M43.6 20H24v8h11.3c-1 2.7-3 5-5.6 6.5l6.2 5.2C39.8 36.3 44 30.7 44 24c0-1.3-.1-2.7-.4-4z" />
+            </svg>
             Continue with Google
           </button>
         </div>
@@ -64,7 +76,8 @@
           <div id="search-dropdown" class="search-dropdown hidden"></div>
         </div>
         <div class="nav-right">
-          <button id="install-app-btn" class="nav-icon-btn mobile-hidden hidden" onclick="promptAppInstall()" style="background:var(--primary);color:white;border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;margin-right:8px;white-space:nowrap;">
+          <button id="install-app-btn" class="nav-icon-btn mobile-hidden hidden" onclick="promptAppInstall()"
+            style="background:var(--primary);color:white;border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;margin-right:8px;white-space:nowrap;">
             <i class="fas fa-download"></i> Get App
           </button>
           <button id="cart-toggle" class="nav-icon-btn mobile-hidden" onclick="toggleCart()">
@@ -82,7 +95,8 @@
               <div class="dropdown-divider"></div>
               <button onclick="showOrders()"><i class="fas fa-box"></i> My Orders</button>
               <button onclick="showAddresses()"><i class="fas fa-map-marker-alt"></i> Addresses</button>
-              <button id="menu-install-btn" class="hidden" onclick="promptAppInstall()"><i class="fas fa-download"></i> Download App</button>
+              <button id="menu-install-btn" class="hidden" onclick="promptAppInstall()"><i class="fas fa-download"></i>
+                Download App</button>
               <button onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
           </div>
@@ -91,7 +105,8 @@
       <!-- Mobile Search -->
       <div class="mobile-search">
         <i class="fas fa-search"></i>
-        <input type="text" id="mobile-search-input" placeholder="Search for products..." oninput="handleSearch(this.value)">
+        <input type="text" id="mobile-search-input" placeholder="Search for products..."
+          oninput="handleSearch(this.value)">
       </div>
     </nav>
 
@@ -143,7 +158,8 @@
     <!-- Mobile Bottom Navigation -->
     <div id="sticky-install-banner" class="sticky-install-banner hidden">
       <div class="banner-content">
-        <div class="banner-icon"><img src="assets/icon-192.png" alt="App Icon" style="width: 40px; height: 40px; border-radius: 8px;"></div>
+        <div class="banner-icon"><img src="assets/icon-192.png" alt="App Icon"
+            style="width: 40px; height: 40px; border-radius: 8px;"></div>
         <div class="banner-text">
           <strong>Get the QuickShop App</strong>
           <span>Faster checkout, exclusive offers!</span>
@@ -151,7 +167,9 @@
       </div>
       <div class="banner-actions">
         <button class="btn-primary-sm" onclick="promptAppInstall()">Download</button>
-        <button class="btn-close-banner" onclick="document.getElementById('sticky-install-banner').classList.add('hidden'); localStorage.setItem('qs_hide_install_banner', 'true');"><i class="fas fa-times"></i></button>
+        <button class="btn-close-banner"
+          onclick="document.getElementById('sticky-install-banner').classList.add('hidden'); localStorage.setItem('qs_hide_install_banner', 'true');"><i
+            class="fas fa-times"></i></button>
       </div>
     </div>
 
@@ -191,7 +209,8 @@
         <div class="cart-summary">
           <div class="summary-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
           <div class="summary-row"><span>Delivery Fee</span><span id="cart-delivery">₹25</span></div>
-          <div class="summary-row discount hidden" id="discount-row"><span>Discount</span><span id="cart-discount">-₹0</span></div>
+          <div class="summary-row discount hidden" id="discount-row"><span>Discount</span><span
+              id="cart-discount">-₹0</span></div>
           <div class="summary-row total"><span>Total</span><span id="cart-total">₹0</span></div>
         </div>
         <div class="coupon-section">
@@ -241,7 +260,8 @@
             <div class="checkout-totals">
               <div class="summary-row"><span>Subtotal</span><span id="checkout-subtotal">₹0</span></div>
               <div class="summary-row"><span>Delivery</span><span id="checkout-delivery">₹25</span></div>
-              <div class="summary-row discount hidden" id="checkout-discount-row"><span>Discount</span><span id="checkout-discount">-₹0</span></div>
+              <div class="summary-row discount hidden" id="checkout-discount-row"><span>Discount</span><span
+                  id="checkout-discount">-₹0</span></div>
               <div class="summary-row total"><span>Total</span><span id="checkout-total">₹0</span></div>
             </div>
           </div>
@@ -266,18 +286,23 @@
             </div>
             <!-- UPI Section -->
             <div id="upi-section" class="payment-detail hidden">
-              <div class="input-group"><i class="fas fa-at"></i><input type="text" id="upi-id" placeholder="Enter UPI ID (e.g. name@upi)"></div>
+              <div class="input-group"><i class="fas fa-at"></i><input type="text" id="upi-id"
+                  placeholder="Enter UPI ID (e.g. name@upi)"></div>
             </div>
             <!-- Card Section -->
             <div id="card-section" class="payment-detail hidden">
-              <div class="input-group"><i class="fas fa-credit-card"></i><input type="text" id="card-number" placeholder="Card Number" maxlength="19"></div>
+              <div class="input-group"><i class="fas fa-credit-card"></i><input type="text" id="card-number"
+                  placeholder="Card Number" maxlength="19"></div>
               <div class="card-row">
-                <div class="input-group"><i class="fas fa-calendar"></i><input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5"></div>
-                <div class="input-group"><i class="fas fa-lock"></i><input type="text" id="card-cvv" placeholder="CVV" maxlength="3"></div>
+                <div class="input-group"><i class="fas fa-calendar"></i><input type="text" id="card-expiry"
+                    placeholder="MM/YY" maxlength="5"></div>
+                <div class="input-group"><i class="fas fa-lock"></i><input type="text" id="card-cvv" placeholder="CVV"
+                    maxlength="3"></div>
               </div>
             </div>
           </div>
-          <button class="btn-place-order" onclick="placeOrder()"><i class="fas fa-check-circle"></i> Place Order</button>
+          <button class="btn-place-order" onclick="placeOrder()"><i class="fas fa-check-circle"></i> Place
+            Order</button>
         </div>
       </div>
     </div>
@@ -314,9 +339,11 @@
       <div class="modal-content" style="text-align:center; padding: 40px 20px;">
         <i class="fas fa-mobile-alt" style="font-size: 48px; color: var(--primary); margin-bottom: 20px;"></i>
         <h2 style="margin-bottom: 12px; color: var(--text-primary);">App Download Required</h2>
-        <p style="color: var(--text-muted); margin-bottom: 24px; line-height: 1.5;">To place an order, please install the QuickShop app to your device's home screen. Enjoy a faster, seamless shopping experience!</p>
+        <p style="color: var(--text-muted); margin-bottom: 24px; line-height: 1.5;">To place an order, please install
+          the QuickShop app to your device's home screen. Enjoy a faster, seamless shopping experience!</p>
         <button class="btn-primary" onclick="promptAppInstall()">Download / Install App</button>
-        <button class="btn-outline-sm" onclick="document.getElementById('pwa-block-modal').classList.add('hidden')" style="margin-top: 16px; width: 100%; border:none; background:transparent; color: var(--text-muted);">Cancel</button>
+        <button class="btn-outline-sm" onclick="document.getElementById('pwa-block-modal').classList.add('hidden')"
+          style="margin-top: 16px; width: 100%; border:none; background:transparent; color: var(--text-muted);">Cancel</button>
       </div>
     </div>
 
@@ -324,12 +351,17 @@
     <div id="ios-install-modal" class="modal hidden">
       <div class="modal-content" style="text-align:center; padding: 40px 20px;">
         <h2 style="margin-bottom: 16px;">Install QuickShop</h2>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">Install this app on your device to order groceries quickly and easily.</p>
-        <div style="background: var(--bg-input); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 24px;">
-          <p style="margin: 0 0 12px 0;"><strong>1.</strong> Tap the <strong>Share</strong> icon <i class="fas fa-share-square" style="color: var(--primary);"></i> at the bottom of the screen.</p>
-          <p style="margin: 0;"><strong>2.</strong> Scroll down and tap <strong>Add to Home Screen</strong> <i class="fas fa-plus-square" style="color: var(--primary);"></i>.</p>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Install this app on your device to order groceries
+          quickly and easily.</p>
+        <div
+          style="background: var(--bg-input); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 24px;">
+          <p style="margin: 0 0 12px 0;"><strong>1.</strong> Tap the <strong>Share</strong> icon <i
+              class="fas fa-share-square" style="color: var(--primary);"></i> at the bottom of the screen.</p>
+          <p style="margin: 0;"><strong>2.</strong> Scroll down and tap <strong>Add to Home Screen</strong> <i
+              class="fas fa-plus-square" style="color: var(--primary);"></i>.</p>
         </div>
-        <button class="btn-primary" onclick="document.getElementById('ios-install-modal').classList.add('hidden')">Got it!</button>
+        <button class="btn-primary" onclick="document.getElementById('ios-install-modal').classList.add('hidden')">Got
+          it!</button>
       </div>
     </div>
 
@@ -338,12 +370,17 @@
       <div class="modal-content" style="text-align:center; padding: 40px 20px;">
         <h2 style="margin-bottom: 16px;">Install QuickShop</h2>
         <p style="color: var(--text-muted); margin-bottom: 24px;">Install this app on your device to order faster.</p>
-        <div style="background: var(--bg-input); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 24px;">
-          <p style="margin: 0 0 12px 0;"><strong>1.</strong> Tap the <strong>3 dots</strong> icon <i class="fas fa-ellipsis-v" style="color: var(--primary);"></i> at the top right of your browser.</p>
-          <p style="margin: 0 0 12px 0;"><strong>2.</strong> Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>.</p>
-          <p style="margin: 0; font-size: 13px; color: var(--warning);"><i class="fas fa-info-circle"></i> <em>If you opened this from WhatsApp/Instagram, please open in Chrome first!</em></p>
+        <div
+          style="background: var(--bg-input); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 24px;">
+          <p style="margin: 0 0 12px 0;"><strong>1.</strong> Tap the <strong>3 dots</strong> icon <i
+              class="fas fa-ellipsis-v" style="color: var(--primary);"></i> at the top right of your browser.</p>
+          <p style="margin: 0 0 12px 0;"><strong>2.</strong> Tap <strong>Install app</strong> or <strong>Add to Home
+              screen</strong>.</p>
+          <p style="margin: 0; font-size: 13px; color: var(--warning);"><i class="fas fa-info-circle"></i> <em>If you
+              opened this from WhatsApp/Instagram, please open in Chrome first!</em></p>
         </div>
-        <button class="btn-primary" onclick="document.getElementById('android-install-modal').classList.add('hidden')">Got it!</button>
+        <button class="btn-primary"
+          onclick="document.getElementById('android-install-modal').classList.add('hidden')">Got it!</button>
       </div>
     </div>
 
@@ -378,7 +415,9 @@
     <!-- Footer -->
     <footer id="main-footer">
       <div class="footer-inner">
-        <div class="footer-brand"><i class="fas fa-bolt"></i> Quick<span>Shop</span><p>Your local store, delivered fast.</p></div>
+        <div class="footer-brand"><i class="fas fa-bolt"></i> Quick<span>Shop</span>
+          <p>Your local store, delivered fast.</p>
+        </div>
         <div class="footer-links">
           <h4>Quick Links</h4>
           <a href="#" onclick="goHome();return false;">Home</a>
@@ -390,22 +429,33 @@
           <a href="https://wa.me/918791416116" target="_blank">Contact Us</a>
         </div>
       </div>
-      <div class="footer-bottom"><p>&copy; 2026 QuickShop. All rights reserved.</p></div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 QuickShop. All rights reserved.</p>
+      </div>
     </footer>
 
     <!-- Mobile Bottom Nav -->
     <nav id="mobile-nav">
-      <button class="mob-nav-btn active" onclick="goHome(); setMobileActive(this)"><i class="fas fa-home"></i><span>Home</span></button>
-      <button class="mob-nav-btn" onclick="document.getElementById('search-input').focus(); setMobileActive(this)"><i class="fas fa-search"></i><span>Search</span></button>
-      <button class="mob-nav-btn" onclick="toggleCart(); setMobileActive(this)"><i class="fas fa-shopping-cart"></i><span>Cart</span><span id="mob-cart-badge" class="badge hidden">0</span></button>
-      <button class="mob-nav-btn" onclick="showOrders(); setMobileActive(this)"><i class="fas fa-box"></i><span>Orders</span></button>
-      <button class="mob-nav-btn" onclick="toggleUserMenu(event); setMobileActive(this)"><i class="fas fa-user"></i><span>Account</span></button>
+      <button class="mob-nav-btn active" onclick="goHome(); setMobileActive(this)"><i
+          class="fas fa-home"></i><span>Home</span></button>
+      <button class="mob-nav-btn" onclick="document.getElementById('search-input').focus(); setMobileActive(this)"><i
+          class="fas fa-search"></i><span>Search</span></button>
+      <button class="mob-nav-btn" onclick="toggleCart(); setMobileActive(this)"><i
+          class="fas fa-shopping-cart"></i><span>Cart</span><span id="mob-cart-badge"
+          class="badge hidden">0</span></button>
+      <button class="mob-nav-btn" onclick="showOrders(); setMobileActive(this)"><i
+          class="fas fa-box"></i><span>Orders</span></button>
+      <button class="mob-nav-btn" onclick="toggleUserMenu(event); setMobileActive(this)"><i
+          class="fas fa-user"></i><span>Account</span></button>
     </nav>
   </div>
 
   <!-- Loading Overlay -->
   <div id="loading-overlay" class="hidden">
-    <div class="loader"><div class="loader-spinner"></div><p>Loading...</p></div>
+    <div class="loader">
+      <div class="loader-spinner"></div>
+      <p>Loading...</p>
+    </div>
   </div>
 
   <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
@@ -414,9 +464,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
   <!-- Firebase Firestore (Database) -->
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
-  
+
   <script>
-    const CURRENT_VERSION = 'v1.1.10';
+    const CURRENT_VERSION = 'v1.1.18';
     if (localStorage.getItem('qs_app_version') !== CURRENT_VERSION) {
       localStorage.setItem('qs_app_version', CURRENT_VERSION);
       localStorage.removeItem('qs_products'); // also clear products cache
@@ -446,14 +496,15 @@
     } else {
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js?v=11').catch(err => {
+          navigator.serviceWorker.register('/sw.js?v=19').catch(err => {
             console.warn('Service worker registration failed:', err);
           });
         });
       }
     }
   </script>
-  
-  <script src="app.js?v=1.1.10"></script>
+
+  <script src="app.js?v=1.1.18"></script>
 </body>
+
 </html>

@@ -15,6 +15,15 @@ const firebaseConfig = {
 // Initialize Firebase
 let db = null;
 if (firebaseConfig.apiKey) {
+  // Dynamically set authDomain in production (on Vercel) to route auth through the same domain,
+  // preventing standalone PWA from opening an external browser window.
+  const isLocal = window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1' || 
+                  window.location.hostname.startsWith('192.168.');
+  if (!isLocal && window.location.hostname) {
+    firebaseConfig.authDomain = window.location.hostname;
+  }
+  
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
 }
@@ -62,50 +71,93 @@ let state = {
   banners: []
 };
 
+function saveCartState() {
+  try {
+    localStorage.setItem('qs_cart', JSON.stringify(state.cart));
+  } catch (e) {
+    console.warn('Failed to save cart:', e);
+  }
+}
+
 // Initialize app data on startup
 async function initApp() {
-  // Inject styles for size pills
+  // 1. Check Google Sign-In redirect result first (required for standalone PWA / mobile redirects)
+  if (typeof firebase !== 'undefined' && firebase.apps.length) {
+    try {
+      const redirectResult = await firebase.auth().getRedirectResult();
+      if (redirectResult && redirectResult.user) {
+        const user = redirectResult.user;
+        state.currentUser = {
+          name: user.displayName || 'Google User',
+          email: user.email,
+          phone: user.phoneNumber || '',
+          address: 'Update your address',
+          role: 'customer',
+          googleAuth: true
+        };
+        localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+        
+        // Save to Firestore customers collection
+        if (db) {
+          await db.collection('customers').doc(user.email).set({
+            name: state.currentUser.name,
+            email: user.email,
+            phone: user.phoneNumber || '',
+            address: 'Update your address',
+            joinedAt: new Date().toISOString()
+          }, { merge: true }).catch(err => console.warn('Customer sync failed:', err));
+        }
+        
+        showToast(`Welcome, ${state.currentUser.name}! Signed in ✓`);
+      }
+    } catch (error) {
+      console.error("Error with Google Redirect Sign-In:", error);
+      showToast(`Google Sign-In failed: ${error.message}`, 'error');
+    }
+  }
+
+  // 2. Check for logged in user session
+  try {
+    const savedUser = localStorage.getItem('qs_current_user');
+    if (savedUser) {
+      state.currentUser = JSON.parse(savedUser);
+      if (state.currentUser) {
+        showScreen('store-screen');
+      } else {
+        showScreen('auth-screen');
+        return;
+      }
+    } else {
+      showScreen('auth-screen');
+      return;
+    }
+  } catch(e) {
+    console.warn('Session corrupted, clearing.', e);
+    localStorage.removeItem('qs_current_user');
+    showScreen('auth-screen');
+    return;
+  }
+
+  try {
+    const savedCart = localStorage.getItem('qs_cart');
+    if (savedCart) {
+      state.cart = JSON.parse(savedCart);
+    }
+  } catch(e) {
+    console.warn('Failed to load cart:', e);
+    state.cart = [];
+  }
+
+  renderSkeletons();
+
   const style = document.createElement('style');
   style.innerHTML = `
-    .size-pill {
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      border-radius: 6px;
-      border: 1px solid var(--border, #cbd5e1);
-      background: var(--bg-card, #ffffff);
-      color: var(--text, #1e293b);
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .size-pill:hover {
-      border-color: #6366f1;
-    }
-    .size-pill.active {
-      border-color: #6366f1;
-      background: rgba(99, 102, 241, 0.1);
-      color: #6366f1;
-    }
-    
-    .detail-size-pill {
-      padding: 8px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 8px;
-      border: 2px solid var(--border, #cbd5e1);
-      background: var(--bg-card, #ffffff);
-      color: var(--text, #1e293b);
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .detail-size-pill:hover {
-      border-color: #6366f1;
-    }
-    .detail-size-pill.active {
-      border-color: #6366f1;
-      background: rgba(99, 102, 241, 0.1);
-      color: #6366f1;
-    }
+    .size-pill { padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: 1px solid var(--border, #cbd5e1); background: var(--bg-card, #ffffff); color: var(--text, #1e293b); cursor: pointer; transition: all 0.15s ease; }
+    .size-pill:hover { border-color: #6366f1; }
+    .size-pill.active { border-color: #6366f1; background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+    .detail-size-pill { padding: 8px 16px; font-size: 14px; font-weight: 600; border-radius: 8px; border: 2px solid var(--border, #cbd5e1); background: var(--bg-card, #ffffff); color: var(--text, #1e293b); cursor: pointer; transition: all 0.15s ease; }
+    .detail-size-pill:hover { border-color: #6366f1; }
+    .detail-size-pill.active { border-color: #6366f1; background: rgba(99, 102, 241, 0.1); color: #6366f1; }
   `;
   document.head.appendChild(style);
 
@@ -115,7 +167,6 @@ async function initApp() {
     localStorage.setItem('qs_force_updated_categories_v3', 'true');
   }
 
-  // Load products & categories from Firebase first, fallback to local
   try {
     const prodsSnap = await db.collection('products').get();
     if (!prodsSnap.empty) {
@@ -143,13 +194,11 @@ async function initApp() {
     state.categories = [];
   }
 
-  // Load Banners (Live)
   try {
     if (db) {
       db.collection('banners').onSnapshot(snap => {
         state.banners = snap.docs.map(d => d.data());
         state.banners.sort((a,b) => (a.order || 0) - (b.order || 0));
-        // If storefront is already initialized and hero banner is visible, re-render it
         if (document.getElementById('hero-slides')) {
           renderHeroBanner();
         }
@@ -157,10 +206,8 @@ async function initApp() {
     }
   } catch(e) {
     state.banners = [];
-    console.warn('Failed to load banners:', e);
   }
 
-  // Load Settings from Firestore (Live), fallback to localStorage
   try {
     if (db) {
       db.collection('settings').doc('store').onSnapshot(settingsSnap => {
@@ -175,7 +222,6 @@ async function initApp() {
           };
           localStorage.setItem('qs_settings', JSON.stringify(state.storeSettings));
           
-          // Re-render UI elements that depend on settings if initialized
           const deliveryTimeEl = document.getElementById('delivery-time');
           if (deliveryTimeEl) deliveryTimeEl.innerText = state.storeSettings.deliveryTime;
           
@@ -197,7 +243,6 @@ async function initApp() {
     }
   }
 
-  // Load orders
   try {
     const savedOrders = localStorage.getItem('qs_orders');
     if (savedOrders) {
@@ -211,7 +256,6 @@ async function initApp() {
     localStorage.setItem('qs_orders', JSON.stringify(state.orders));
   }
 
-  // Sync all localStorage orders up to Firestore (migrates historical orders)
   if (db && Array.isArray(state.orders) && state.orders.length > 0) {
     state.orders.forEach(order => {
       const docId = String(order.id || order._id || '');
@@ -221,24 +265,7 @@ async function initApp() {
     });
   }
 
-  try {
-    const savedUser = localStorage.getItem('qs_current_user');
-    if (savedUser) {
-      state.currentUser = JSON.parse(savedUser);
-      if (state.currentUser) {
-        showScreen('store-screen');
-        initStorefront();
-      } else {
-        showScreen('auth-screen');
-      }
-    } else {
-      showScreen('auth-screen');
-    }
-  } catch(e) {
-    console.warn('Session corrupted, clearing.', e);
-    localStorage.removeItem('qs_current_user');
-    showScreen('auth-screen');
-  }
+  initStorefront();
 }
 
 function clearSession() {
@@ -246,6 +273,7 @@ function clearSession() {
   localStorage.removeItem('qs_products');
   localStorage.removeItem('qs_orders');
   localStorage.removeItem('qs_settings');
+  localStorage.removeItem('qs_cart');
   location.reload();
 }
 
@@ -375,43 +403,56 @@ function handleGoogleLogin() {
   // Start the loading overlay
   document.getElementById('loading-overlay').classList.remove('hidden');
 
-  firebase.auth().signInWithPopup(provider)
-    .then((result) => {
-      const user = result.user;
-      
-      // Update our state with Firebase User details
-      state.currentUser = {
-        name: user.displayName || 'Google User',
-        email: user.email,
-        phone: user.phoneNumber || '',
-        address: 'Update your address',
-        role: 'customer',
-        googleAuth: true
-      };
-      
-      localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+  // Use signInWithRedirect on mobile devices or in standalone PWA mode
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isPWA = typeof isStandalone === 'function' && isStandalone();
 
-      // Save to Firestore customers collection
-      db.collection('customers').doc(user.email).set({
-        name: state.currentUser.name,
-        email: user.email,
-        phone: user.phoneNumber || '',
-        address: 'Update your address',
-        joinedAt: new Date().toISOString()
-      }, { merge: true }).catch(err => console.warn('Customer sync failed:', err));
-      
-      // Hide loading overlay
-      document.getElementById('loading-overlay').classList.add('hidden');
-      
-      showToast(`Welcome, ${state.currentUser.name}! Signed in ✓`);
-      showScreen('store-screen');
-      initStorefront();
-    })
-    .catch((error) => {
-      console.error("Error signing in with Google:", error);
-      document.getElementById('loading-overlay').classList.add('hidden');
-      showToast(`Google Sign-In failed: ${error.message}`, 'error');
-    });
+  if (isMobile || isPWA) {
+    firebase.auth().signInWithRedirect(provider)
+      .catch((error) => {
+        console.error("Error starting redirect sign-in:", error);
+        document.getElementById('loading-overlay').classList.add('hidden');
+        showToast(`Google Sign-In failed: ${error.message}`, 'error');
+      });
+  } else {
+    firebase.auth().signInWithPopup(provider)
+      .then((result) => {
+        const user = result.user;
+        
+        // Update our state with Firebase User details
+        state.currentUser = {
+          name: user.displayName || 'Google User',
+          email: user.email,
+          phone: user.phoneNumber || '',
+          address: 'Update your address',
+          role: 'customer',
+          googleAuth: true
+        };
+        
+        localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+
+        // Save to Firestore customers collection
+        db.collection('customers').doc(user.email).set({
+          name: state.currentUser.name,
+          email: user.email,
+          phone: user.phoneNumber || '',
+          address: 'Update your address',
+          joinedAt: new Date().toISOString()
+        }, { merge: true }).catch(err => console.warn('Customer sync failed:', err));
+        
+        // Hide loading overlay
+        document.getElementById('loading-overlay').classList.add('hidden');
+        
+        showToast(`Welcome, ${state.currentUser.name}! Signed in ✓`);
+        showScreen('store-screen');
+        initStorefront();
+      })
+      .catch((error) => {
+        console.error("Error signing in with Google:", error);
+        document.getElementById('loading-overlay').classList.add('hidden');
+        showToast(`Google Sign-In failed: ${error.message}`, 'error');
+      });
+  }
 }
 
 function handleLogout() {
@@ -423,6 +464,7 @@ function handleLogout() {
   state.cart = [];
   state.appliedCoupon = null;
   localStorage.removeItem('qs_current_user');
+  localStorage.removeItem('qs_cart');
   showToast('Logged out successfully');
   showScreen('auth-screen');
   toggleAuthForm('login');
@@ -1152,6 +1194,7 @@ function addToCart(prodId, event) {
   showToast(`${product.name} added to cart`);
 
   updateCartState(prodId);
+  saveCartState();
 }
 
 function updateCartQty(prodId, delta, event) {
@@ -1161,42 +1204,47 @@ function updateCartQty(prodId, delta, event) {
 
   state.cart[cartIndex].quantity += delta;
 
-  if (state.cart[cartIndex].quantity <= 0) {
+  const isRemoved = state.cart[cartIndex].quantity <= 0;
+  if (isRemoved) {
     state.cart.splice(cartIndex, 1);
   }
 
   // Extract base product ID and size name if it is a variant
-  const parts = prodId.split('-');
-  const baseProdId = parts[0];
-  const isVariant = parts.length > 1;
+  let baseProdId = prodId;
+  let sizeName = '';
+  let isVariant = false;
+  
+  const matchingProd = state.products.find(p => prodId.startsWith(p.id + '-'));
+  if (matchingProd) {
+    baseProdId = matchingProd.id;
+    sizeName = prodId.substring(matchingProd.id.length + 1);
+    isVariant = true;
+  }
 
   if (isVariant) {
     updateCartBadge();
     
     // Update the card UI if visible
-    const cards = document.querySelectorAll('.product-card');
-    cards.forEach(card => {
-      const activePill = card.querySelector('.size-pill.active');
-      if (activePill) {
-        const sizeName = parts.slice(1).join('-');
-        if (activePill.innerText.trim() === sizeName) {
-          const actionWrapper = card.querySelector('.product-action-wrapper');
-          if (actionWrapper) {
-            const cartItem = state.cart.find(item => item.product.id === prodId);
-            const qty = cartItem ? cartItem.quantity : 0;
-            if (qty > 0) {
-              actionWrapper.innerHTML = `
-                <div class="quantity-controls">
-                  <button class="qty-btn" onclick="updateCartQty('${prodId}', -1, event)">-</button>
-                  <span class="qty-val">${qty}</span>
-                  <button class="qty-btn" onclick="updateCartQty('${prodId}', 1, event)">+</button>
-                </div>
-              `;
-            } else {
-              actionWrapper.innerHTML = `
-                <button class="add-btn" onclick="addSizeToCart('${baseProdId}', '${sizeName}', event)">ADD</button>
-              `;
-            }
+    const actionWrappers = document.querySelectorAll(`#act-${baseProdId}`);
+    actionWrappers.forEach(actionWrapper => {
+      const card = actionWrapper.closest('.product-card');
+      if (card) {
+        const activePill = card.querySelector('.size-pill.active');
+        if (activePill && activePill.innerText.trim() === sizeName) {
+          const cartItem = state.cart.find(item => item.product.id === prodId);
+          const qty = cartItem ? cartItem.quantity : 0;
+          if (qty > 0) {
+            actionWrapper.innerHTML = `
+              <div class="quantity-controls">
+                <button class="qty-btn" onclick="updateCartQty('${prodId}', -1, event)">-</button>
+                <span class="qty-val">${qty}</span>
+                <button class="qty-btn" onclick="updateCartQty('${prodId}', 1, event)">+</button>
+              </div>
+            `;
+          } else {
+            actionWrapper.innerHTML = `
+              <button class="add-btn" onclick="addSizeToCart('${baseProdId}', '${sizeName}', event)">ADD</button>
+            `;
           }
         }
       }
@@ -1209,6 +1257,8 @@ function updateCartQty(prodId, delta, event) {
   } else {
     updateCartState(prodId);
   }
+
+  saveCartState();
 }
 
 function updateCartState(prodId) {
@@ -1327,12 +1377,12 @@ function addSizeToCart(prodId, sizeName, event) {
 
   // Update card state for currently selected size
   updateCartBadge();
-  const cards = document.querySelectorAll('.product-card');
-  cards.forEach(card => {
-    const activePill = card.querySelector('.size-pill.active');
-    if (activePill && activePill.innerText.trim() === sizeName) {
-      const actionWrapper = card.querySelector('.product-action-wrapper');
-      if (actionWrapper) {
+  const actionWrappers = document.querySelectorAll(`#act-${prodId}`);
+  actionWrappers.forEach(actionWrapper => {
+    const card = actionWrapper.closest('.product-card');
+    if (card) {
+      const activePill = card.querySelector('.size-pill.active');
+      if (activePill && activePill.innerText.trim() === sizeName) {
         actionWrapper.innerHTML = `
           <div class="quantity-controls">
             <button class="qty-btn" onclick="updateCartQty('${variantProduct.id}', -1, event)">-</button>
@@ -1348,6 +1398,8 @@ function addSizeToCart(prodId, sizeName, event) {
   if (document.getElementById('cart-sidebar').classList.contains('active-cart')) {
     renderCartItems();
   }
+
+  saveCartState();
 }
 
 function selectDetailSizePill(btn, prodId, sizeName, price, mrp) {
@@ -1760,6 +1812,7 @@ async function placeOrder() {
     const couponInput = document.getElementById('coupon-input');
     if (couponInput) couponInput.value = '';
     updateCartBadge();
+    saveCartState();
 
     // Close checkout and show success
     closeCheckout();
@@ -1922,4 +1975,47 @@ if (document.readyState === 'loading') {
 } else {
   initInstallPrompt();
   initApp();
+}
+
+
+function renderSkeletons() {
+  const categoriesGrid = document.getElementById('categories-grid');
+  if (categoriesGrid) {
+    categoriesGrid.innerHTML = Array(6).fill('<div class="skeleton-shimmer skeleton-category"></div>').join('');
+  }
+  const productSections = document.getElementById('product-sections');
+  if (productSections) {
+    productSections.innerHTML = `
+      <section class="store-section">
+        <h2 class="section-title"><div class="skeleton-shimmer skeleton-text" style="width: 150px; height: 24px;"></div></h2>
+        <div class="products-grid">
+          ${Array(4).fill(`
+            <div class="skeleton-card skeleton-shimmer">
+              <div class="skeleton-img"></div>
+              <div class="skeleton-text"></div>
+              <div class="skeleton-text short"></div>
+              <div class="skeleton-btn"></div>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+      <section class="store-section">
+        <h2 class="section-title"><div class="skeleton-shimmer skeleton-text" style="width: 150px; height: 24px;"></div></h2>
+        <div class="products-grid">
+          ${Array(4).fill(`
+            <div class="skeleton-card skeleton-shimmer">
+              <div class="skeleton-img"></div>
+              <div class="skeleton-text"></div>
+              <div class="skeleton-text short"></div>
+              <div class="skeleton-btn"></div>
+            </div>
+          `).join('')}
+        </div>
+      </section>
+    `;
+  }
+  const heroSlides = document.getElementById('hero-slides');
+  if (heroSlides) {
+    heroSlides.innerHTML = '<div class="skeleton-shimmer skeleton-hero" style="width:100%; height:200px; border-radius:24px;"></div>';
+  }
 }
