@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=1.1.21">
+  <link rel="stylesheet" href="styles.css?v=1.1.22">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -466,7 +466,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
 
   <script>
-    const CURRENT_VERSION = 'v1.1.21';
+    const CURRENT_VERSION = 'v1.1.22';
     if (localStorage.getItem('qs_app_version') !== CURRENT_VERSION) {
       localStorage.setItem('qs_app_version', CURRENT_VERSION);
       localStorage.removeItem('qs_products'); // also clear products cache
@@ -496,7 +496,7 @@
     } else {
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js?v=22').catch(err => {
+          navigator.serviceWorker.register('/sw.js?v=23').catch(err => {
             console.warn('Service worker registration failed:', err);
           });
         });
@@ -504,7 +504,7 @@
     }
   </script>
 
-  <script src="app.js?v=1.1.21"></script>
+  <script src="app.js?v=1.1.22"></script>
 </body>
 
 </html>

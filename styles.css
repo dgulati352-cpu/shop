@@ -2977,11 +2977,15 @@ body {
 }
 
 .nav-icon-btn {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
   color: #f9fafb !important;
 }
 
 .nav-icon-btn:hover {
-  background: #1f2a37 !important;
+  background: #374151 !important;
+  border-color: #10b981 !important;
+  color: #10b981 !important;
 }
 
 .badge {
