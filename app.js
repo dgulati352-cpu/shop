@@ -15,15 +15,6 @@ const firebaseConfig = {
 // Initialize Firebase
 let db = null;
 if (firebaseConfig.apiKey) {
-  // Dynamically set authDomain in production (on Vercel) to route auth through the same domain,
-  // preventing standalone PWA from opening an external browser window.
-  const isLocal = window.location.hostname === 'localhost' || 
-                  window.location.hostname === '127.0.0.1' || 
-                  window.location.hostname.startsWith('192.168.');
-  if (!isLocal && window.location.hostname) {
-    firebaseConfig.authDomain = window.location.hostname;
-  }
-  
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
 }
