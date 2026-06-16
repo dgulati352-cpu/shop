@@ -3126,25 +3126,31 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
 }
 
-.user-dropdown-header {
-  border-bottom: 1px solid #1f2a37 !important;
+.user-info {
+  background: #1f2a37 !important;
+  border-bottom: 1px solid #374151 !important;
 }
 
-.user-dropdown-header strong {
+.user-info strong {
   color: #f9fafb !important;
 }
 
-.user-dropdown-header small {
+.user-info small {
   color: #9ca3af !important;
 }
 
-.user-dropdown-item {
+.user-dropdown button {
   color: #f9fafb !important;
+  background: transparent !important;
 }
 
-.user-dropdown-item:hover {
+.user-dropdown button:hover {
   background: #1f2a37 !important;
   color: #10b981 !important;
+}
+
+.user-dropdown button:last-child {
+  color: #ef4444 !important;
 }
 
 /* Checkout */
