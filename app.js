@@ -137,7 +137,7 @@ async function initApp() {
         if (document.getElementById('hero-slides')) {
           renderHeroBanner();
         }
-      });
+      }, err => console.warn('Banners load failed:', err));
     }
   } catch(e) {
     state.banners = [];
@@ -164,7 +164,7 @@ async function initApp() {
             calculateCartTotals();
           }
         }
-      });
+      }, err => console.warn('Settings load failed:', err));
     } else {
       throw new Error('No DB');
     }
@@ -251,9 +251,13 @@ async function initApp() {
   // --- C. Listen to Authentication State Observer ---
   if (typeof firebase !== 'undefined' && firebase.apps.length) {
     firebase.auth().onAuthStateChanged(async (user) => {
+      // Hide loading overlay if active
+      const loadingOverlay = document.getElementById('loading-overlay');
+      if (loadingOverlay) loadingOverlay.classList.add('hidden');
+
       if (user) {
         // User is signed in to Firebase Auth!
-        // Retrieve profile details (either cached in localStorage or fresh from Firestore)
+        // Show store screen instantly with cached or default details to prevent blocking/hanging
         const savedUser = localStorage.getItem('qs_current_user');
         let parsed = null;
         try {
@@ -263,30 +267,56 @@ async function initApp() {
         if (parsed && parsed.email === user.email) {
           state.currentUser = parsed;
         } else {
-          // Fetch from Firestore
-          let existingCust = null;
-          if (db) {
-            try {
-              const custSnap = await db.collection('customers').doc(user.email).get();
-              if (custSnap.exists) existingCust = custSnap.data();
-            } catch(e) {
-              console.warn('Failed to fetch existing customer:', e);
-            }
-          }
-
+          // Initialize with Google details immediately
           state.currentUser = {
-            name: existingCust?.name || user.displayName || 'Google User',
+            name: user.displayName || 'Google User',
             email: user.email,
-            phone: existingCust?.phone || user.phoneNumber || '',
-            address: existingCust?.address || 'Update your address',
+            phone: user.phoneNumber || '',
+            address: 'Update your address',
             role: 'customer',
             googleAuth: true
           };
           localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
         }
 
-        initStorefront();
+        // Show store screen immediately!
         showScreen('store-screen');
+        initStorefront();
+
+        // Sync and load fresh profile data from Firestore in the background
+        if (db) {
+          db.collection('customers').doc(user.email).get()
+            .then(custSnap => {
+              let existingCust = null;
+              if (custSnap.exists) {
+                existingCust = custSnap.data();
+              }
+              
+              // Update state details
+              state.currentUser.name = existingCust?.name || state.currentUser.name;
+              state.currentUser.phone = existingCust?.phone || state.currentUser.phone;
+              state.currentUser.address = existingCust?.address || state.currentUser.address;
+              localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+
+              // Update active header fields
+              const avatarEl = document.getElementById('user-avatar');
+              if (avatarEl) avatarEl.innerText = state.currentUser.name.charAt(0).toUpperCase();
+              const nameEl = document.getElementById('dropdown-name');
+              if (nameEl) nameEl.innerText = state.currentUser.name;
+              const emailEl = document.getElementById('dropdown-email');
+              if (emailEl) emailEl.innerText = state.currentUser.email;
+
+              // Write/Sync user details back to Firestore to ensure consistency
+              db.collection('customers').doc(user.email).set({
+                name: state.currentUser.name,
+                email: user.email,
+                phone: state.currentUser.phone,
+                address: state.currentUser.address,
+                joinedAt: existingCust?.joinedAt || new Date().toISOString()
+              }, { merge: true }).catch(err => console.warn('Customer profile sync failed:', err));
+            })
+            .catch(e => console.warn('Failed to fetch existing customer on auth change:', e));
+        }
       } else {
         // No Firebase user. Check if there is a local credential session (non-Google)
         const savedUser = localStorage.getItem('qs_current_user');
