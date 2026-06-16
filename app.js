@@ -594,11 +594,18 @@ function handleLogout() {
     firebase.auth().signOut().catch(err => console.error("Error signing out from Firebase:", err));
   }
   
+  // Detach real-time listeners
+  if (_articlesUnsubscribe) {
+    try { _articlesUnsubscribe(); } catch(e) {}
+    _articlesUnsubscribe = null;
+  }
+
   state.currentUser = null;
   state.cart = [];
   state.appliedCoupon = null;
   state.articlesListenerActive = false;
   state.ordersListenerActive = false;
+  state.articles = [];
   localStorage.removeItem('qs_current_user');
   localStorage.removeItem('qs_cart');
   showToast('Logged out successfully');
@@ -645,17 +652,52 @@ function initStorefront() {
 }
 
 // Real-time listener for articles from Firestore
+let _articlesUnsubscribe = null;
 function initArticlesListener() {
-  if (!db || state.articlesListenerActive) return;
+  if (!db) return;
+  // Always detach any existing listener before creating a new one
+  if (_articlesUnsubscribe) {
+    try { _articlesUnsubscribe(); } catch(e) {}
+    _articlesUnsubscribe = null;
+  }
   state.articlesListenerActive = true;
-  db.collection('articles')
+
+  const isFirstArticleLoad = !state.articles || state.articles.length === 0;
+
+  const handleSnap = (snap) => {
+    const incoming = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Sort client-side so we don't depend on a composite Firestore index
+    incoming.sort((a, b) => {
+      const ta = a.createdAt?.seconds || (a.createdAt ? new Date(a.createdAt).getTime()/1000 : 0);
+      const tb = b.createdAt?.seconds || (b.createdAt ? new Date(b.createdAt).getTime()/1000 : 0);
+      return tb - ta;
+    });
+
+    const previousCount = (state.articles || []).length;
+    state.articles = incoming;
+    renderArticlesSection();
+
+    // Notify user if a new article was published while they're browsing
+    if (!isFirstArticleLoad && incoming.length > previousCount) {
+      showToast('📰 New article published! Check it out below.', 'info');
+    }
+  };
+
+  // Try with compound query first (requires Firestore index)
+  _articlesUnsubscribe = db.collection('articles')
     .where('published', '==', true)
     .orderBy('createdAt', 'desc')
-    .onSnapshot(snap => {
-      state.articles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderArticlesSection();
-    }, () => {
-      // Silent fail — articles are optional content
+    .onSnapshot(handleSnap, (err) => {
+      console.warn('Articles listener (ordered) failed, retrying without orderBy:', err.code);
+      // Fallback: query without orderBy (no index required), sort client-side
+      if (_articlesUnsubscribe) { try { _articlesUnsubscribe(); } catch(e) {} }
+      _articlesUnsubscribe = db.collection('articles')
+        .where('published', '==', true)
+        .onSnapshot(handleSnap, (err2) => {
+          console.warn('Articles listener failed entirely:', err2.code);
+          state.articlesListenerActive = false;
+          _articlesUnsubscribe = null;
+        });
     });
 }
 
