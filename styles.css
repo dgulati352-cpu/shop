@@ -3224,7 +3224,15 @@ body {
 }
 
 .sidebar-body {
-  background: #090d16 !important;
+  background: #111928 !important;
+}
+
+.empty-state {
+  color: #9ca3af !important;
+}
+
+.empty-state i {
+  color: #374151 !important;
 }
 
 .empty-state p {
