@@ -3044,8 +3044,25 @@ body {
   border-color: #10b981 !important;
 }
 
-.product-name {
+.product-title {
   color: #f9fafb !important;
+}
+
+.size-pill, .detail-size-pill {
+  background: #1f2a37 !important;
+  border-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+.size-pill:hover, .detail-size-pill:hover {
+  border-color: #10b981 !important;
+  color: #10b981 !important;
+}
+
+.size-pill.active, .detail-size-pill.active {
+  border-color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: #10b981 !important;
 }
 
 .product-price {
