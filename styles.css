@@ -3376,3 +3376,24 @@ body {
 .btn-google:hover {
   background: #374151 !important;
 }
+
+/* Order Success Modal overrides */
+.success-details {
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+  color: #f9fafb !important;
+}
+
+.success-details strong {
+  color: #10b981 !important;
+}
+
+.btn-primary {
+  background: #10b981 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.btn-primary:hover {
+  background: #059669 !important;
+}
