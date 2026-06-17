@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=1.1.30">
+  <link rel="stylesheet" href="styles.css?v=1.1.33">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -337,28 +337,28 @@
     <!-- PWA Install Block Modal -->
     <div id="pwa-block-modal" class="modal hidden">
       <div class="modal-content" style="text-align:center; padding: 40px 20px;">
-        <i class="fas fa-mobile-alt" style="font-size: 48px; color: var(--primary); margin-bottom: 20px;"></i>
-        <h2 style="margin-bottom: 12px; color: var(--text-primary);">App Download Required</h2>
-        <p style="color: var(--text-muted); margin-bottom: 24px; line-height: 1.5;">To place an order, please install
+        <i class="fas fa-mobile-alt" style="font-size: 48px; color: var(--primary-color); margin-bottom: 20px;"></i>
+        <h2 style="margin-bottom: 12px; color: var(--dark-color);">App Download Required</h2>
+        <p style="color: var(--gray-dark); margin-bottom: 24px; line-height: 1.5;">To place an order, please install
           the QuickShop app to your device's home screen. Enjoy a faster, seamless shopping experience!</p>
         <button class="btn-primary" onclick="promptAppInstall()">Download / Install App</button>
         <button class="btn-outline-sm" onclick="document.getElementById('pwa-block-modal').classList.add('hidden')"
-          style="margin-top: 16px; width: 100%; border:none; background:transparent; color: var(--text-muted);">Cancel</button>
+          style="margin-top: 16px; width: 100%; border:none; background:transparent; color: var(--gray-dark); cursor: pointer;">Cancel</button>
       </div>
     </div>
 
     <!-- iOS Install Instruction Modal -->
     <div id="ios-install-modal" class="modal hidden">
       <div class="modal-content" style="text-align:center; padding: 40px 20px;">
-        <h2 style="margin-bottom: 16px;">Install QuickShop</h2>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">Install this app on your device to order groceries
+        <h2 style="margin-bottom: 16px; color: var(--dark-color);">Install QuickShop</h2>
+        <p style="color: var(--gray-dark); margin-bottom: 24px;">Install this app on your device to order groceries
           quickly and easily.</p>
         <div
-          style="background: var(--bg-input); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 24px;">
-          <p style="margin: 0 0 12px 0;"><strong>1.</strong> Tap the <strong>Share</strong> icon <i
-              class="fas fa-share-square" style="color: var(--primary);"></i> at the bottom of the screen.</p>
-          <p style="margin: 0;"><strong>2.</strong> Scroll down and tap <strong>Add to Home Screen</strong> <i
-              class="fas fa-plus-square" style="color: var(--primary);"></i>.</p>
+          style="background: var(--gray-light); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 24px; border: 1px solid var(--gray-medium);">
+          <p style="margin: 0 0 12px 0; color: var(--dark-color);"><strong>1.</strong> Tap the <strong>Share</strong> icon <i
+              class="fas fa-share-square" style="color: var(--primary-color);"></i> at the bottom of the screen.</p>
+          <p style="margin: 0; color: var(--dark-color);"><strong>2.</strong> Scroll down and tap <strong>Add to Home Screen</strong> <i
+              class="fas fa-plus-square" style="color: var(--primary-color);"></i>.</p>
         </div>
         <button class="btn-primary" onclick="document.getElementById('ios-install-modal').classList.add('hidden')">Got
           it!</button>
@@ -368,15 +368,15 @@
     <!-- Android Install Instruction Modal -->
     <div id="android-install-modal" class="modal hidden">
       <div class="modal-content" style="text-align:center; padding: 40px 20px;">
-        <h2 style="margin-bottom: 16px;">Install QuickShop</h2>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">Install this app on your device to order faster.</p>
+        <h2 style="margin-bottom: 16px; color: var(--dark-color);">Install QuickShop</h2>
+        <p style="color: var(--gray-dark); margin-bottom: 24px;">Install this app on your device to order faster.</p>
         <div
-          style="background: var(--bg-input); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 24px;">
-          <p style="margin: 0 0 12px 0;"><strong>1.</strong> Tap the <strong>3 dots</strong> icon <i
-              class="fas fa-ellipsis-v" style="color: var(--primary);"></i> at the top right of your browser.</p>
-          <p style="margin: 0 0 12px 0;"><strong>2.</strong> Tap <strong>Install app</strong> or <strong>Add to Home
+          style="background: var(--gray-light); padding: 20px; border-radius: 12px; text-align: left; margin-bottom: 24px; border: 1px solid var(--gray-medium);">
+          <p style="margin: 0 0 12px 0; color: var(--dark-color);"><strong>1.</strong> Tap the <strong>3 dots</strong> icon <i
+              class="fas fa-ellipsis-v" style="color: var(--primary-color);"></i> at the top right of your browser.</p>
+          <p style="margin: 0 0 12px 0; color: var(--dark-color);"><strong>2.</strong> Tap <strong>Install app</strong> or <strong>Add to Home
               screen</strong>.</p>
-          <p style="margin: 0; font-size: 13px; color: var(--warning);"><i class="fas fa-info-circle"></i> <em>If you
+          <p style="margin: 0; font-size: 13px; color: #d97706;"><i class="fas fa-info-circle"></i> <em>If you
               opened this from WhatsApp/Instagram, please open in Chrome first!</em></p>
         </div>
         <button class="btn-primary"
@@ -466,7 +466,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
 
   <script>
-    const CURRENT_VERSION = 'v1.1.30';
+    const CURRENT_VERSION = 'v1.1.33';
     if (localStorage.getItem('qs_app_version') !== CURRENT_VERSION) {
       localStorage.setItem('qs_app_version', CURRENT_VERSION);
       localStorage.removeItem('qs_products'); // also clear products cache
@@ -496,7 +496,7 @@
     } else {
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js?v=31').catch(err => {
+          navigator.serviceWorker.register('/sw.js?v=34').catch(err => {
             console.warn('Service worker registration failed:', err);
           });
         });
@@ -504,7 +504,7 @@
     }
   </script>
 
-  <script src="app.js?v=1.1.30"></script>
+  <script src="app.js?v=1.1.33"></script>
 </body>
 
 </html>

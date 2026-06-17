@@ -1747,8 +1747,8 @@ function showCheckout() {
       return;
     }
 
-    // Check if admin requires PWA install for checkout
-    if (state.storeSettings.requirePwaInstall && typeof isStandalone === 'function' && !isStandalone()) {
+    // Check if user is in standalone mode (PWA installed)
+    if (typeof isStandalone === 'function' && !isStandalone()) {
       const pwaModal = document.getElementById('pwa-block-modal');
       if (pwaModal) {
         pwaModal.classList.remove('hidden');
@@ -1842,7 +1842,42 @@ function closeCheckout() {
 }
 
 async function placeOrder() {
+  const placeOrderBtn = document.querySelector('.btn-place-order');
   try {
+    // 1. PWA Standalone check
+    if (typeof isStandalone === 'function' && !isStandalone()) {
+      showToast('App download required to place orders', 'error');
+      const pwaModal = document.getElementById('pwa-block-modal');
+      if (pwaModal) pwaModal.classList.remove('hidden');
+      return;
+    }
+
+    // 2. Rate limit check (using localStorage timestamps)
+    const now = Date.now();
+    let orderTimestamps = [];
+    try {
+      const stored = localStorage.getItem('qs_order_timestamps');
+      if (stored) {
+        orderTimestamps = JSON.parse(stored);
+      }
+    } catch (e) {}
+
+    // Filter to last 10 minutes (600,000 ms)
+    orderTimestamps = orderTimestamps.filter(t => now - t < 600000);
+
+    // Limit 1: Last order must be at least 30 seconds ago
+    if (orderTimestamps.length > 0 && (now - orderTimestamps[orderTimestamps.length - 1] < 30000)) {
+      const remainingSecs = Math.ceil((30000 - (now - orderTimestamps[orderTimestamps.length - 1])) / 1000);
+      showToast(`Please wait ${remainingSecs}s before placing another order.`, 'error');
+      return;
+    }
+
+    // Limit 2: Max 3 orders per 10 minutes
+    if (orderTimestamps.length >= 3) {
+      showToast('You have reached the limit of 3 orders per 10 minutes. Please try again later.', 'error');
+      return;
+    }
+
     const nameInput = document.getElementById('checkout-name-input');
     const phoneInput = document.getElementById('checkout-phone-input');
     const emailInput = document.getElementById('checkout-email-input');
@@ -1889,22 +1924,6 @@ async function placeOrder() {
       return;
     }
 
-    // Persist the entered contact info back to the profile
-    state.currentUser.name = finalName;
-    state.currentUser.phone = finalPhone;
-    state.currentUser.email = finalEmail;
-    state.currentUser.address = finalAddress;
-    localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
-
-    if (db) {
-      db.collection('customers').doc(finalEmail).set({
-        name: finalName,
-        email: finalEmail,
-        phone: finalPhone,
-        address: finalAddress
-      }, { merge: true }).catch(err => console.warn('Customer details sync failed on order:', err));
-    }
-
     // Payment Verification
     const checkedPayment = document.querySelector('input[name="payment"]:checked');
     const paymentMethod = checkedPayment ? checkedPayment.value : 'cod';
@@ -1922,6 +1941,28 @@ async function placeOrder() {
         showToast('Please complete all card details', 'error');
         return;
       }
+    }
+
+    // Disable button to prevent double clicks
+    if (placeOrderBtn) {
+      placeOrderBtn.disabled = true;
+      placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing Order...';
+    }
+
+    // Persist the entered contact info back to the profile
+    state.currentUser.name = finalName;
+    state.currentUser.phone = finalPhone;
+    state.currentUser.email = finalEmail;
+    state.currentUser.address = finalAddress;
+    localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+
+    if (db) {
+      db.collection('customers').doc(finalEmail).set({
+        name: finalName,
+        email: finalEmail,
+        phone: finalPhone,
+        address: finalAddress
+      }, { merge: true }).catch(err => console.warn('Customer details sync failed on order:', err));
     }
 
     // Generate sequential order ID using Firestore counter
@@ -2001,6 +2042,10 @@ async function placeOrder() {
       }
     }
 
+    // Record new order timestamp for rate limiting
+    orderTimestamps.push(now);
+    localStorage.setItem('qs_order_timestamps', JSON.stringify(orderTimestamps));
+
     // Reset cart
     state.cart = [];
     state.appliedCoupon = null;
@@ -2009,6 +2054,12 @@ async function placeOrder() {
     updateCartBadge();
     saveCartState();
 
+    // Re-enable button
+    if (placeOrderBtn) {
+      placeOrderBtn.disabled = false;
+      placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+    }
+
     // Close checkout and show success
     closeCheckout();
 
@@ -2016,6 +2067,11 @@ async function placeOrder() {
     document.getElementById('order-success').classList.remove('hidden');
   } catch (err) {
     console.error('placeOrder error:', err);
+    // Re-enable button
+    if (placeOrderBtn) {
+      placeOrderBtn.disabled = false;
+      placeOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+    }
     showToast('Order failed: ' + (err.message || 'Unknown error. Check console.'), 'error');
   }
 }
@@ -2131,11 +2187,11 @@ function promptAppInstall() {
   const pwaModal = document.getElementById('pwa-block-modal');
   if (pwaModal) pwaModal.classList.add('hidden');
 
+  // If native install prompt is available (Chrome on Android), use it directly
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
-        // Hide UI elements if user installed the app
         const installBtn = document.getElementById('install-app-btn');
         if (installBtn) installBtn.classList.add('hidden');
         const menuInstallBtn = document.getElementById('menu-install-btn');
@@ -2145,9 +2201,35 @@ function promptAppInstall() {
       }
       deferredPrompt = null;
     });
+    return;
+  }
+
+  // Detect iOS (Safari) — beforeinstallprompt is never fired on iOS
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) &&
+                !/CriOS|FxiOS/i.test(navigator.userAgent); // exclude Chrome/Firefox on iOS
+
+  // Detect Android without native prompt (opened from WhatsApp, Instagram, etc.)
+  const isAndroid = /Android/i.test(navigator.userAgent);
+
+  if (isIOS) {
+    // Show iOS-specific "Add to Home Screen" instructions modal
+    const iosModal = document.getElementById('ios-install-modal');
+    if (iosModal) {
+      iosModal.classList.remove('hidden');
+    } else {
+      showToast('On Safari: tap the Share icon ⬆ then "Add to Home Screen"', 'info');
+    }
+  } else if (isAndroid) {
+    // Show Android-specific instructions modal
+    const androidModal = document.getElementById('android-install-modal');
+    if (androidModal) {
+      androidModal.classList.remove('hidden');
+    } else {
+      showToast('Tap the 3-dot menu in Chrome → "Install app" or "Add to Home screen"', 'info');
+    }
   } else {
-    // Custom HTML toast (no native browser alert popup)
-    showToast("To install, open your browser's menu (three dots) and select 'Install app' or 'Add to Home screen'.", 'info');
+    // Desktop fallback
+    showToast("Open browser menu → 'Install app' or 'Add to Home screen'.", 'info');
   }
 }
 
