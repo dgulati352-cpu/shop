@@ -74,6 +74,51 @@ function saveCartState() {
 
 // Initialize app data on startup
 async function initApp() {
+  // Set Firebase Auth persistence to LOCAL explicitly on app startup
+  if (typeof firebase !== 'undefined' && firebase.apps.length) {
+    try {
+      firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+        .catch(err => console.warn('Set persistence failed:', err));
+    } catch (e) {
+      console.warn('Set persistence failed:', e);
+    }
+  }
+
+  // --- Check standalone / PWA status and configure Login UI ---
+  const stayLoggedInContainer = document.getElementById('stay-logged-in-container');
+  const stayLoggedInCheckbox = document.getElementById('stay-logged-in');
+  const pwaLoginTip = document.getElementById('pwa-login-tip');
+  if (isStandalone()) {
+    if (stayLoggedInCheckbox) stayLoggedInCheckbox.checked = true;
+    if (stayLoggedInContainer) stayLoggedInContainer.style.display = 'none';
+    if (pwaLoginTip) pwaLoginTip.classList.remove('hidden');
+  } else {
+    if (stayLoggedInContainer) stayLoggedInContainer.style.display = 'flex';
+    if (pwaLoginTip) pwaLoginTip.classList.add('hidden');
+  }
+
+  // --- Load cached session immediately if available to prevent flashing ---
+  const savedUser = localStorage.getItem('qs_current_user') || sessionStorage.getItem('qs_current_user');
+  if (savedUser) {
+    try {
+      state.currentUser = JSON.parse(savedUser);
+      // Seed initial products so that first render is fast and doesn't crash
+      state.products = INITIAL_PRODUCTS;
+      
+      // Load cart from storage
+      const savedCart = localStorage.getItem('qs_cart');
+      if (savedCart) {
+        const parsedCart = JSON.parse(savedCart);
+        state.cart = Array.isArray(parsedCart) ? parsedCart : [];
+      }
+
+      initStorefront();
+      showScreen('store-screen');
+    } catch(e) {
+      console.warn('Failed to parse cached session:', e);
+    }
+  }
+
   // --- A. Load app data first ---
   try {
     const savedCart = localStorage.getItem('qs_cart');
@@ -150,6 +195,15 @@ async function initApp() {
 
   // Expose promise for auth handler
   window._dbLoadPromise = dbLoadPromise;
+
+  // If we loaded the user from cache, refresh storefront once DB data finishes loading
+  if (savedUser) {
+    dbLoadPromise.then(() => {
+      if (state.currentUser) {
+        initStorefront();
+      }
+    }).catch(e => console.warn('Background database load failed:', e));
+  }
 
   try {
     if (db) {
@@ -250,7 +304,14 @@ async function initApp() {
           role: 'customer',
           googleAuth: true
         };
-        localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+        
+        // Save based on stay-logged-in checkbox
+        const stayLoggedIn = document.getElementById('stay-logged-in') ? document.getElementById('stay-logged-in').checked : true;
+        if (stayLoggedIn) {
+          localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+        } else {
+          sessionStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+        }
         
         // Save to Firestore customers collection in background
         if (db && user.email) {
@@ -288,7 +349,7 @@ async function initApp() {
 
       if (user) {
         // Set user state immediately from cache
-        const savedUser = localStorage.getItem('qs_current_user');
+        const savedUser = localStorage.getItem('qs_current_user') || sessionStorage.getItem('qs_current_user');
         let parsed = null;
         try {
           if (savedUser) parsed = JSON.parse(savedUser);
@@ -305,7 +366,13 @@ async function initApp() {
             role: 'customer',
             googleAuth: true
           };
-          localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+          
+          const stayLoggedIn = document.getElementById('stay-logged-in') ? document.getElementById('stay-logged-in').checked : true;
+          if (stayLoggedIn) {
+            localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+          } else {
+            sessionStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+          }
         }
 
         // Wait for DB products to load (with 4s timeout) then show store
@@ -333,13 +400,22 @@ async function initApp() {
                 state.currentUser.name = existingCust.name || state.currentUser.name;
                 state.currentUser.phone = existingCust.phone || state.currentUser.phone;
                 state.currentUser.address = existingCust.address || state.currentUser.address;
-                localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+                
+                // Save updated user to whichever storage was being used
+                const isLocal = !!localStorage.getItem('qs_current_user');
+                if (isLocal) {
+                  localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+                } else {
+                  sessionStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+                }
+                
                 const avatarEl = document.getElementById('user-avatar');
                 if (avatarEl) avatarEl.innerText = state.currentUser.name.charAt(0).toUpperCase();
                 const nameEl = document.getElementById('dropdown-name');
                 if (nameEl) nameEl.innerText = state.currentUser.name;
                 const emailEl = document.getElementById('dropdown-email');
                 if (emailEl) emailEl.innerText = state.currentUser.email;
+                
                 db.collection('customers').doc(user.email).set({
                   name: state.currentUser.name,
                   email: user.email,
@@ -352,12 +428,12 @@ async function initApp() {
             .catch(e => console.warn('Failed to fetch customer on auth change:', e));
         }
       } else {
-        // No Firebase user — check for local (non-Google) session
-        const savedUser = localStorage.getItem('qs_current_user');
+        // No Firebase user — check for local/cached session
+        const savedUser = localStorage.getItem('qs_current_user') || sessionStorage.getItem('qs_current_user');
         if (savedUser) {
           try {
             const parsed = JSON.parse(savedUser);
-            if (parsed && !parsed.googleAuth) {
+            if (parsed) {
               state.currentUser = parsed;
               // Ensure products for local-auth users too
               try {
@@ -377,8 +453,8 @@ async function initApp() {
       }
     });
   } else {
-    // Firebase is not initialized, fallback to simple localStorage session check
-    const savedUser = localStorage.getItem('qs_current_user');
+    // Firebase is not initialized, fallback to simple session check
+    const savedUser = localStorage.getItem('qs_current_user') || sessionStorage.getItem('qs_current_user');
     if (savedUser) {
       try {
         state.currentUser = JSON.parse(savedUser);
@@ -395,6 +471,7 @@ async function initApp() {
 
 function clearSession() {
   localStorage.removeItem('qs_current_user');
+  sessionStorage.removeItem('qs_current_user');
   localStorage.removeItem('qs_products');
   localStorage.removeItem('qs_orders');
   localStorage.removeItem('qs_settings');
@@ -467,7 +544,15 @@ function handleLogin() {
 
   if (user) {
     state.currentUser = { name: user.name, email: user.email, phone: user.phone, address: user.address, role: 'customer' };
-    localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+    
+    // Save based on stay-logged-in checkbox
+    const stayLoggedIn = document.getElementById('stay-logged-in') ? document.getElementById('stay-logged-in').checked : true;
+    if (stayLoggedIn) {
+      localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+    } else {
+      sessionStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+    }
+    
     showToast(`Welcome back, ${user.name}!`);
     showScreen('store-screen');
     initStorefront();
@@ -504,7 +589,14 @@ function handleSignup() {
   localStorage.setItem('qs_users', JSON.stringify(users));
 
   state.currentUser = { name, email, phone, address, role: 'customer' };
-  localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+  
+  // Save based on stay-logged-in checkbox
+  const stayLoggedIn = document.getElementById('stay-logged-in') ? document.getElementById('stay-logged-in').checked : true;
+  if (stayLoggedIn) {
+    localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+  } else {
+    sessionStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+  }
 
   // Save to Firestore customers collection
   if (db) {
@@ -550,7 +642,13 @@ function handleGoogleLogin() {
       googleAuth: true
     };
     
-    localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+    // Save based on stay-logged-in checkbox
+    const stayLoggedIn = document.getElementById('stay-logged-in') ? document.getElementById('stay-logged-in').checked : true;
+    if (stayLoggedIn) {
+      localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+    } else {
+      sessionStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+    }
 
     if (db) {
       db.collection('customers').doc(user.email).set({
@@ -604,6 +702,7 @@ function handleLogout() {
   state.ordersListenerActive = false;
   state.articles = [];
   localStorage.removeItem('qs_current_user');
+  sessionStorage.removeItem('qs_current_user');
   localStorage.removeItem('qs_cart');
   showToast('Logged out successfully');
   showScreen('auth-screen');
@@ -1319,6 +1418,7 @@ function updateDetailModalCartActions(p) {
   }
 }
 
+// Helper function to update detail modal action specifically
 function updateDetailModalCartActionsById(id) {
   const p = state.products.find(prod => prod.id === id);
   if (p) updateDetailModalCartActions(p);
