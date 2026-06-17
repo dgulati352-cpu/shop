@@ -270,7 +270,12 @@ async function initApp() {
       }
     } catch (error) {
       console.error("Error with Google Redirect Sign-In:", error);
-      showToast(`Google Sign-In failed: ${error.message}`, 'error');
+      // Suppress noisy/harmless "missing initial state" or "web storage unsupported" errors on load
+      const isStorageError = error.code === 'auth/web-storage-unsupported' || 
+                             (error.message && error.message.toLowerCase().includes('initial state'));
+      if (!isStorageError) {
+        showToast(`Google Sign-In failed: ${error.message}`, 'error');
+      }
     }
   }
 
@@ -523,70 +528,62 @@ function handleGoogleLogin() {
   // Start the loading overlay
   document.getElementById('loading-overlay').classList.remove('hidden');
 
-  // Use signInWithRedirect on mobile devices or in standalone PWA mode
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  const isPWA = typeof isStandalone === 'function' && isStandalone();
-
-  if (isMobile || isPWA) {
-    firebase.auth().signInWithRedirect(provider)
-      .catch((error) => {
-        console.error("Error starting redirect sign-in:", error);
-        document.getElementById('loading-overlay').classList.add('hidden');
-        showToast(`Google Sign-In failed: ${error.message}`, 'error');
-      });
-  } else {
-    firebase.auth().signInWithPopup(provider)
-      .then(async (result) => {
-        const user = result.user;
-        
-        let existingCust = null;
-        if (db) {
-          try {
-            const custSnap = await db.collection('customers').doc(user.email).get();
-            if (custSnap.exists) {
-              existingCust = custSnap.data();
-            }
-          } catch (e) {
-            console.warn('Failed to fetch existing customer on popup login:', e);
-          }
+  const handleAuthSuccess = async (user) => {
+    let existingCust = null;
+    if (db) {
+      try {
+        const custSnap = await db.collection('customers').doc(user.email).get();
+        if (custSnap.exists) {
+          existingCust = custSnap.data();
         }
+      } catch (e) {
+        console.warn('Failed to fetch existing customer on login:', e);
+      }
+    }
 
-        // Update our state with Firebase User details
-        state.currentUser = {
-          name: existingCust?.name || user.displayName || 'Google User',
-          email: user.email,
-          phone: existingCust?.phone || user.phoneNumber || '',
-          address: existingCust?.address || 'Update your address',
-          role: 'customer',
-          googleAuth: true
-        };
-        
-        localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
+    state.currentUser = {
+      name: existingCust?.name || user.displayName || 'Google User',
+      email: user.email,
+      phone: existingCust?.phone || user.phoneNumber || '',
+      address: existingCust?.address || 'Update your address',
+      role: 'customer',
+      googleAuth: true
+    };
+    
+    localStorage.setItem('qs_current_user', JSON.stringify(state.currentUser));
 
-        // Save to Firestore customers collection
-        if (db) {
-          db.collection('customers').doc(user.email).set({
-            name: state.currentUser.name,
-            email: user.email,
-            phone: state.currentUser.phone,
-            address: state.currentUser.address,
-            joinedAt: existingCust?.joinedAt || new Date().toISOString()
-          }, { merge: true }).catch(err => console.warn('Customer sync failed:', err));
-        }
-        
-        // Hide loading overlay
-        document.getElementById('loading-overlay').classList.add('hidden');
-        
-        showToast(`Welcome, ${state.currentUser.name}! Signed in ✓`);
-        showScreen('store-screen');
-        initStorefront();
-      })
-      .catch((error) => {
-        console.error("Error signing in with Google:", error);
-        document.getElementById('loading-overlay').classList.add('hidden');
-        showToast(`Google Sign-In failed: ${error.message}`, 'error');
-      });
-  }
+    if (db) {
+      db.collection('customers').doc(user.email).set({
+        name: state.currentUser.name,
+        email: user.email,
+        phone: state.currentUser.phone,
+        address: state.currentUser.address,
+        joinedAt: existingCust?.joinedAt || new Date().toISOString()
+      }, { merge: true }).catch(err => console.warn('Customer sync failed:', err));
+    }
+    
+    document.getElementById('loading-overlay').classList.add('hidden');
+    showToast(`Welcome, ${state.currentUser.name}! Signed in ✓`);
+    showScreen('store-screen');
+    initStorefront();
+  };
+
+  // Try popup first since it preserves PWA state/context and storage limits
+  firebase.auth().signInWithPopup(provider)
+    .then(async (result) => {
+      await handleAuthSuccess(result.user);
+    })
+    .catch((error) => {
+      console.warn("Popup sign-in blocked or failed, trying redirect fallback:", error);
+      
+      // If popup fails (blocked by browser or not supported), fall back to redirect
+      firebase.auth().signInWithRedirect(provider)
+        .catch((redirectErr) => {
+          console.error("Error starting redirect sign-in:", redirectErr);
+          document.getElementById('loading-overlay').classList.add('hidden');
+          showToast(`Google Sign-In failed: ${redirectErr.message}`, 'error');
+        });
+    });
 }
 
 function handleLogout() {
