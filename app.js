@@ -27,12 +27,10 @@ const INITIAL_PRODUCTS = [
   { id: "p2", name: "Frozen Peas", category: "Frozen", price: 80, mrp: 100, unit: "1 kg", imageUrl: "assets/frozen.png", stock: 100, desc: "Freshly frozen green peas." },
   // Seasoning
   { id: "p3", name: "Mixed Herbs", category: "Seasoning", price: 60, mrp: 75, unit: "50g", imageUrl: "assets/seasoning.png", stock: 120, desc: "Aromatic mixed herbs for pizza and pasta." },
-  // Cakes Material
-  { id: "p4", name: "Baking Powder", category: "Cakes Material", price: 40, mrp: 50, unit: "100g", imageUrl: "assets/cakes_material.png", stock: 80, desc: "High quality baking powder for fluffy cakes." },
-  // Cake Mould
-  { id: "p5", name: "Silicone Cake Mould", category: "Cake Mould", price: 250, mrp: 300, unit: "1 pc", imageUrl: "assets/cake_mould.png", stock: 30, desc: "Non-stick silicone mould for baking." },
-  // Cake Premix
-  { id: "p6", name: "Chocolate Cake Premix", category: "Cake Premix", price: 150, mrp: 180, unit: "400g", imageUrl: "assets/cake_premix.png", stock: 60, desc: "Easy to bake chocolate cake premix." },
+  // Bakery Material
+  { id: "p4", name: "Baking Powder", category: "Bakery Material", price: 40, mrp: 50, unit: "100g", imageUrl: "assets/cakes_material.png", stock: 80, desc: "High quality baking powder for fluffy cakes." },
+  { id: "p5", name: "Silicone Cake Mould", category: "Bakery Material", price: 250, mrp: 300, unit: "1 pc", imageUrl: "assets/cake_mould.png", stock: 30, desc: "Non-stick silicone mould for baking." },
+  { id: "p6", name: "Chocolate Cake Premix", category: "Bakery Material", price: 150, mrp: 180, unit: "400g", imageUrl: "assets/cake_premix.png", stock: 60, desc: "Easy to bake chocolate cake premix." },
   // Coffees
   { id: "p7", name: "Instant Coffee", category: "Coffees", price: 200, mrp: 250, unit: "100g", imageUrl: "https://images.unsplash.com/photo-1559525839-b184a4d698c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", stock: 90, desc: "Strong and aromatic instant coffee." },
   // Mojitos
@@ -101,8 +99,6 @@ async function initApp() {
   if (savedUser) {
     try {
       state.currentUser = JSON.parse(savedUser);
-      // Seed initial products so that first render is fast and doesn't crash
-      state.products = INITIAL_PRODUCTS;
       
       // Load cart from storage
       const savedCart = localStorage.getItem('qs_cart');
@@ -111,7 +107,6 @@ async function initApp() {
         state.cart = Array.isArray(parsedCart) ? parsedCart : [];
       }
 
-      initStorefront();
       showScreen('store-screen');
     } catch(e) {
       console.warn('Failed to parse cached session:', e);
@@ -143,10 +138,10 @@ async function initApp() {
   `;
   document.head.appendChild(style);
 
-  if (!localStorage.getItem('qs_force_updated_categories_v3')) {
+  if (!localStorage.getItem('qs_force_updated_categories_v4')) {
     localStorage.removeItem('qs_products');
     localStorage.removeItem('qs_categories');
-    localStorage.setItem('qs_force_updated_categories_v3', 'true');
+    localStorage.setItem('qs_force_updated_categories_v4', 'true');
   }
 
   // Load database data — store the promise so auth handler can await it
@@ -998,19 +993,25 @@ const CATEGORY_IMAGES = {
   "Sauces": "assets/sauces.png",
   "Frozen": "assets/frozen.png",
   "Seasoning": "assets/seasoning.png",
-  "Cakes Material": "assets/cakes_material.png",
-  "Cake Mould": "assets/cake_mould.png",
-  "Cake Premix": "assets/cake_premix.png",
+  "Bakery Material": "assets/cakes_material.png",
   "Coffees": "https://images.unsplash.com/photo-1559525839-b184a4d698c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
   "Mojitos": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
 };
 
 function getCategoriesList() {
   if (state.categories && state.categories.length > 0) {
-    return state.categories.map(c => ({ name: c.name, imageUrl: c.imageUrl || CATEGORY_IMAGES[c.name] || '' }));
+    return state.categories.map(c => ({ name: c.name, imageUrl: c.imageUrl || CATEGORY_IMAGES[c.name] || '', isNonVeg: !!c.isNonVeg }));
   }
   const catNames = [...new Set(state.products.map(p => p.category))];
-  return catNames.map(name => ({ name, imageUrl: CATEGORY_IMAGES[name] || '' }));
+  return catNames.map(name => ({ name, imageUrl: CATEGORY_IMAGES[name] || '', isNonVeg: false }));
+}
+
+function isNonVegCategory(catName) {
+  if (state.categories && state.categories.length > 0) {
+    const cat = state.categories.find(c => c.name === catName);
+    return cat ? !!cat.isNonVeg : false;
+  }
+  return false;
 }
 
 function renderCategoryPills() {
@@ -1109,6 +1110,11 @@ function renderStoreSections() {
 }
 
 function renderProductCard(p) {
+  const nonVeg = isNonVegCategory(p.category);
+  const vegDot = nonVeg
+    ? `<span title="Non-Veg" style="display:inline-block;width:14px;height:14px;border:1.5px solid #ef4444;border-radius:3px;background:#fff;text-align:center;line-height:12px;font-size:9px;vertical-align:middle;margin-right:4px;"><span style="display:inline-block;width:8px;height:8px;background:#ef4444;border-radius:50%;"></span></span>`
+    : `<span title="Veg" style="display:inline-block;width:14px;height:14px;border:1.5px solid #10b981;border-radius:3px;background:#fff;text-align:center;line-height:12px;font-size:9px;vertical-align:middle;margin-right:4px;"><span style="display:inline-block;width:8px;height:8px;background:#10b981;border-radius:50%;"></span></span>`;
+
   if (p.hasSizes && Array.isArray(p.sizes) && p.sizes.length > 0) {
     const firstSize = p.sizes[0];
     const discount = firstSize.mrp && firstSize.mrp > firstSize.price ? Math.round(((firstSize.mrp - firstSize.price) / firstSize.mrp) * 100) : 0;
@@ -1141,7 +1147,7 @@ function renderProductCard(p) {
           ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">` : (p.emoji || '🛒')}
         </div>
         <div class="product-info">
-          <div class="product-title" onclick="openProductModal('${p.id}')">${p.name}</div>
+          <div class="product-title" onclick="openProductModal('${p.id}')">${vegDot}${p.name}</div>
           <div class="product-unit" style="margin-top: 6px;">
             <div class="product-sizes-pills" style="display:flex; gap:6px; flex-wrap:wrap;">
               ${p.sizes.map((sz, idx) => `
@@ -1194,7 +1200,7 @@ function renderProductCard(p) {
         ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">` : (p.emoji || '🛒')}
       </div>
       <div class="product-info">
-        <div class="product-title" onclick="openProductModal('${p.id}')">${p.name}</div>
+        <div class="product-title" onclick="openProductModal('${p.id}')">${vegDot}${p.name}</div>
         <div class="product-unit">${p.unit || '1 unit'}</div>
         <div class="product-footer">
           <div class="product-price-box">
@@ -2399,3 +2405,55 @@ function renderSkeletons() {
     heroSlides.innerHTML = '<div class="skeleton-shimmer skeleton-hero" style="width:100%; height:200px; border-radius:24px;"></div>';
   }
 }
+
+// ==================== PWA AUTO UPDATE & OPTION HELPERS ====================
+
+window.checkAppUpdates = function() {
+  if (!('serviceWorker' in navigator) || !window.swRegistration) {
+    showToast('Updates not supported on this browser', 'info');
+    return;
+  }
+  const reg = window.swRegistration;
+  if (reg.waiting || reg.installing) {
+    window.showUpdateBanner();
+    return;
+  }
+  showToast('Checking for updates...', 'info');
+  reg.update().then(newReg => {
+    setTimeout(() => {
+      if (newReg.installing || newReg.waiting) {
+        window.showUpdateBanner();
+      } else {
+        showToast('QuickShop is up to date! (' + (window.CURRENT_VERSION || 'v1.1.34') + ')', 'success');
+      }
+    }, 1500);
+  }).catch(() => {
+    showToast('Failed to check for updates', 'error');
+  });
+};
+
+window.showUpdateBanner = function() {
+  if (document.getElementById('sticky-update-banner')) return;
+  
+  const banner = document.createElement('div');
+  banner.id = 'sticky-update-banner';
+  banner.style.cssText = 'position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 9999; width: min(90%, 400px); background: var(--primary, #10b981); color: white; padding: 12px 18px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: space-between; gap: 12px; font-family: sans-serif;';
+  
+  banner.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 10px; text-align: left;">
+      <i class="fas fa-sync-alt fa-spin" style="font-size: 18px;"></i>
+      <div>
+        <strong style="display: block; font-size: 14px; font-weight: 600; margin: 0;">Update Available</strong>
+        <span style="font-size: 11px; opacity: 0.9;">New version is ready to install</span>
+      </div>
+    </div>
+    <button onclick="window.location.reload()" style="background: white; color: var(--primary, #10b981); border: none; padding: 6px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.15s ease;">
+      Update Now
+    </button>
+  `;
+  document.body.appendChild(banner);
+};
+
+window.addEventListener('swUpdateAvailable', () => {
+  window.showUpdateBanner();
+});

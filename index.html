@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=1.1.35">
+  <link rel="stylesheet" href="styles.css?v=1.1.36">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -104,6 +104,7 @@
               <button onclick="showAddresses()"><i class="fas fa-map-marker-alt"></i> Addresses</button>
               <button id="menu-install-btn" class="hidden" onclick="promptAppInstall()"><i class="fas fa-download"></i>
                 Download App</button>
+              <button id="menu-update-btn" onclick="checkAppUpdates()"><i class="fas fa-sync-alt"></i> Check for Updates</button>
               <button onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
           </div>
@@ -474,9 +475,11 @@
 
   <script>
     const CURRENT_VERSION = 'v1.1.34';
+    window.CURRENT_VERSION = CURRENT_VERSION;
     if (localStorage.getItem('qs_app_version') !== CURRENT_VERSION) {
       localStorage.setItem('qs_app_version', CURRENT_VERSION);
-      localStorage.removeItem('qs_products'); // also clear products cache
+      localStorage.removeItem('qs_products'); // clear products cache
+      localStorage.removeItem('qs_categories'); // clear categories cache
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(registrations => {
           let promises = [];
@@ -503,15 +506,56 @@
     } else {
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js?v=36').catch(err => {
+          navigator.serviceWorker.register('/sw.js').then(reg => {
+            console.log('Service Worker registered');
+            window.swRegistration = reg;
+            
+            // Check for updates immediately when app is opened
+            reg.update().catch(err => console.warn('SW update check failed:', err));
+            
+            reg.onupdatefound = () => {
+              const installingWorker = reg.installing;
+              if (installingWorker) {
+                installingWorker.onstatechange = () => {
+                  if (installingWorker.state === 'installed') {
+                    if (navigator.serviceWorker.controller) {
+                      console.log('New version available');
+                      window.dispatchEvent(new CustomEvent('swUpdateAvailable'));
+                    }
+                  }
+                };
+              }
+            };
+
+            // Check for updates when app is resumed/brought to foreground
+            document.addEventListener('visibilitychange', () => {
+              if (document.visibilityState === 'visible') {
+                reg.update().catch(err => console.warn('SW update check failed:', err));
+              }
+            });
+
+            // Check periodically every 5 minutes
+            setInterval(() => {
+              reg.update().catch(err => console.warn('SW update check failed:', err));
+            }, 5 * 60 * 1000);
+          }).catch(err => {
             console.warn('Service worker registration failed:', err);
           });
+        });
+
+        // Automatically reload once new service worker takes control
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
         });
       }
     }
   </script>
 
-  <script src="app.js?v=1.1.35"></script>
+  <script src="app.js?v=1.1.36"></script>
 </body>
 
 </html>

@@ -3463,3 +3463,80 @@ body {
   border-top: 1px solid #1f2a37 !important;
   color: #6b7280 !important;
 }
+
+/* ==================== SKELETON SHIMMER LOADING ==================== */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: #1f2a37 !important;
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(31, 41, 55, 0) 0%,
+    rgba(255, 255, 255, 0.05) 20%,
+    rgba(255, 255, 255, 0.1) 60%,
+    rgba(31, 41, 55, 0) 100%
+  ) !important;
+  animation: shimmer-animation 1.5s infinite;
+}
+
+@keyframes shimmer-animation {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-category {
+  height: 80px;
+  width: 80px;
+  border-radius: 50% !important;
+  margin: 0 auto;
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  background: #1f2a37 !important;
+  border: 1px solid #374151 !important;
+  border-radius: 16px;
+  padding: 16px;
+  gap: 12px;
+}
+
+.skeleton-img {
+  width: 100%;
+  height: 120px;
+  border-radius: 12px;
+  background: #374151 !important;
+}
+
+.skeleton-text {
+  height: 16px;
+  border-radius: 4px;
+  background: #374151 !important;
+  width: 80%;
+}
+
+.skeleton-text.short {
+  width: 50%;
+}
+
+.skeleton-btn {
+  height: 36px;
+  border-radius: 8px;
+  background: #374151 !important;
+  width: 100%;
+}
+
+.skeleton-hero {
+  background: #1f2a37 !important;
+}
