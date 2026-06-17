@@ -90,12 +90,11 @@ async function initApp() {
   const pwaLoginTip = document.getElementById('pwa-login-tip');
   if (isStandalone()) {
     if (stayLoggedInCheckbox) stayLoggedInCheckbox.checked = true;
-    if (stayLoggedInContainer) stayLoggedInContainer.style.display = 'none';
     if (pwaLoginTip) pwaLoginTip.classList.remove('hidden');
   } else {
-    if (stayLoggedInContainer) stayLoggedInContainer.style.display = 'flex';
     if (pwaLoginTip) pwaLoginTip.classList.add('hidden');
   }
+  if (stayLoggedInContainer) stayLoggedInContainer.style.display = 'flex';
 
   // --- Load cached session immediately if available to prevent flashing ---
   const savedUser = localStorage.getItem('qs_current_user') || sessionStorage.getItem('qs_current_user');
